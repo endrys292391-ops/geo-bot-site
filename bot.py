@@ -349,8 +349,9 @@ def main():
     if job_queue:
         # Проверка истекших напоминаний каждый час
         job_queue.run_repeating(check_expired_reminders, interval=3600, first=10)
-        # Напоминание о геолокации раз в день
-        job_queue.run_daily(notify_location_denied, time=datetime.time(12, 0))
+        # Напоминание о геолокации раз в день в 12:00
+        job_queue.run_daily(notify_location_denied, time=datetime.time(12, 0, 0))
+        print("⏰ Job queue настроен")
     
     print("🚀 Бот запущен!")
     print("⏰ Проверка геолокации активна")
@@ -359,3 +360,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
