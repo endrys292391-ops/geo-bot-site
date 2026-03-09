@@ -4,267 +4,38 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Гео-Напоминалки</title>
-    
-    <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Яндекс Карты API -->
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=84e764a6-fd03-4740-beb1-328a4072c4ca&lang=ru_RU" type="text/javascript"></script>
-    
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=84e764a6-fd03-4740-beb1-328a4072c4ca&lang=ru_RU"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-        
-        body {
-            background: #ffffff;
-            color: #000000;
-            min-height: 100vh;
-        }
-        
-        .tabs {
-            display: flex;
-            background: #f0f0f0;
-            padding: 10px;
-            gap: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: transparent;
-            color: #000000;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .tab.active {
-            background: #40a7e3;
-            color: white;
-        }
-        
-        .content {
-            display: none;
-            padding: 16px;
-        }
-        
-        .content.active {
-            display: block;
-        }
-        
-        #map {
-            width: 100%;
-            height: 350px;
-            border-radius: 16px;
-            margin: 16px 0;
-            border: 2px solid #e0e0e0;
-        }
-        
-        .search-container {
-            position: relative;
-            margin-bottom: 16px;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 16px;
-            border: 2px solid #40a7e3;
-            border-radius: 16px;
-            font-size: 16px;
-            background: #f5f5f5;
-            color: #000000;
-            outline: none;
-        }
-        
-        .search-input:focus {
-            border-color: #2ecc71;
-            background: #ffffff;
-        }
-        
-        .suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-height: 250px;
-            overflow-y: auto;
-            background: white;
-            border: 2px solid #40a7e3;
-            border-radius: 16px;
-            margin-top: 4px;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .suggestion-item {
-            padding: 14px 16px;
-            border-bottom: 1px solid #e0e0e0;
-            cursor: pointer;
-            color: #000000;
-            background: white;
-        }
-        
-        .suggestion-item:hover {
-            background: #f0f0f0;
-        }
-        
-        .place-card {
-            background: #f5f5f5;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .place-card:active {
-            background: #e8e8e8;
-        }
-        
-        .place-name {
-            font-weight: 700;
-            font-size: 18px;
-            margin-bottom: 4px;
-            color: #000000;
-        }
-        
-        .place-address {
-            font-size: 14px;
-            color: #666666;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 8px 0;
-            transition: 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .btn:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-primary {
-            background: #40a7e3;
-            color: white;
-        }
-        
-        .btn-success {
-            background: #2ecc71;
-            color: white;
-        }
-        
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .btn-warning {
-            background: #f39c12;
-            color: white;
-        }
-        
-        .action-menu {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 24px;
-            border-radius: 24px 24px 0 0;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
-            transform: translateY(100%);
-            transition: transform 0.3s;
-            z-index: 1000;
-        }
-        
-        .action-menu.show {
-            transform: translateY(0);
-        }
-        
-        .action-title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-        
-        .select-field {
-            width: 100%;
-            padding: 16px;
-            border: 2px solid #40a7e3;
-            border-radius: 12px;
-            font-size: 16px;
-            margin: 8px 0;
-            background: white;
-            color: #000000;
-        }
-        
-        .radius-control {
-            margin: 16px 0;
-            padding: 16px;
-            background: #f5f5f5;
-            border-radius: 12px;
-        }
-        
-        .radius-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-        
-        .radius-slider {
-            width: 100%;
-            height: 8px;
-            background: #40a7e3;
-            border-radius: 4px;
-            -webkit-appearance: none;
-        }
-        
-        .radius-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
-            background: #2ecc71;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid white;
-        }
-        
-        .selected-info {
-            background: #f5f5f5;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 16px 0;
-            border: 2px solid #40a7e3;
-        }
-        
-        .selected-address {
-            background: white;
-            padding: 12px;
-            border-radius: 12px;
-            margin: 10px 0;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #ffffff; color: #000000; min-height: 100vh; }
+        .tabs { display: flex; background: #f0f0f0; padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 100; }
+        .tab { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; color: #000000; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .tab.active { background: #40a7e3; color: white; }
+        .content { display: none; padding: 16px; }
+        .content.active { display: block; }
+        #map { width: 100%; height: 350px; border-radius: 16px; margin: 16px 0; border: 2px solid #e0e0e0; }
+        .search-container { position: relative; margin-bottom: 16px; }
+        .search-input { width: 100%; padding: 16px; border: 2px solid #40a7e3; border-radius: 16px; font-size: 16px; background: #f5f5f5; color: #000000; outline: none; }
+        .suggestions { position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto; background: white; border: 2px solid #40a7e3; border-radius: 16px; margin-top: 4px; display: none; z-index: 1000; }
+        .suggestion-item { padding: 14px 16px; border-bottom: 1px solid #e0e0e0; cursor: pointer; }
+        .suggestion-item:hover { background: #f0f0f0; }
+        .place-card { background: #f5f5f5; border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; border: 1px solid #e0e0e0; }
+        .place-name { font-weight: 700; font-size: 18px; margin-bottom: 4px; }
+        .place-address { font-size: 14px; color: #666666; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 16px; font-size: 16px; font-weight: 600; cursor: pointer; margin: 8px 0; }
+        .btn-primary { background: #40a7e3; color: white; }
+        .btn-success { background: #2ecc71; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
+        .action-menu { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 24px; border-radius: 24px 24px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); transform: translateY(100%); transition: transform 0.3s; z-index: 1000; }
+        .action-menu.show { transform: translateY(0); }
+        .select-field { width: 100%; padding: 16px; border: 2px solid #40a7e3; border-radius: 12px; font-size: 16px; margin: 8px 0; }
+        .radius-control { margin: 16px 0; padding: 16px; background: #f5f5f5; border-radius: 12px; }
+        .radius-slider { width: 100%; height: 8px; background: #40a7e3; border-radius: 4px; -webkit-appearance: none; }
+        .radius-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: #2ecc71; border-radius: 50%; cursor: pointer; }
+        .selected-info { background: #f5f5f5; border-radius: 16px; padding: 20px; margin: 16px 0; border: 2px solid #40a7e3; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -279,23 +50,14 @@
             <input type="text" class="search-input" id="searchInput" placeholder="🔍 Введите адрес..." oninput="searchAddress(this.value)">
             <div class="suggestions" id="suggestions"></div>
         </div>
-        
         <div id="map"></div>
-        
         <div id="selectedPlaceInfo" class="selected-info hidden">
-            <div class="label">📍 Выбранное место:</div>
             <div class="selected-address" id="selectedAddress"></div>
-            
             <input type="text" class="search-input" id="placeName" placeholder="Название места">
-            
             <div class="radius-control">
-                <div class="radius-label">
-                    <span>📏 Радиус:</span>
-                    <span id="radiusValue">200</span> м
-                </div>
+                <span>📏 Радиус: <span id="radiusValue">200</span>м</span>
                 <input type="range" class="radius-slider" min="50" max="1000" value="200" step="50" oninput="updateRadius(this.value)">
             </div>
-            
             <select class="select-field" id="repeatSelect">
                 <option value="once">Один раз</option>
                 <option value="daily">На 1 день</option>
@@ -303,9 +65,7 @@
                 <option value="monthly">На 1 месяц</option>
                 <option value="forever">Постоянно</option>
             </select>
-            
             <input type="text" class="search-input" id="reminderText" placeholder="Текст напоминания">
-            
             <button class="btn btn-primary" onclick="saveToFavorites()">⭐ В избранные места</button>
             <button class="btn btn-success" onclick="createReminder()">🔔 Создать напоминание</button>
         </div>
@@ -327,233 +87,111 @@
         <button class="btn btn-success" onclick="showAddReminderFromPlace()">🔔 Добавить напоминание</button>
         <button class="btn btn-warning" onclick="editPlace()">✏️ Редактировать</button>
         <button class="btn btn-danger" onclick="deletePlace()">🗑️ Удалить</button>
-        <button class="btn btn-secondary" onclick="hidePlaceMenu()">Отмена</button>
-    </div>
-    
-    <div class="action-menu" id="reminderFromPlaceMenu">
-        <div class="action-title" id="reminderPlaceName"></div>
-        <div class="radius-control">
-            <div class="radius-label">
-                <span>📏 Радиус:</span>
-                <span id="reminderRadiusValue">200</span> м
-            </div>
-            <input type="range" class="radius-slider" min="50" max="1000" value="200" step="50" oninput="updateReminderRadius(this.value)">
-        </div>
-        <select class="select-field" id="reminderRepeatSelect">
-            <option value="once">Один раз</option>
-            <option value="daily">На 1 день</option>
-            <option value="weekly">На 1 неделю</option>
-            <option value="monthly">На 1 месяц</option>
-            <option value="forever">Постоянно</option>
-        </select>
-        <input type="text" class="search-input" id="reminderFromPlaceText" placeholder="Текст напоминания">
-        <button class="btn btn-success" onclick="createReminderFromPlace()">🔔 Создать</button>
-        <button class="btn btn-secondary" onclick="hideReminderMenu()">Отмена</button>
     </div>
     
     <script>
-        let tg;
-        let map, placemark;
-        let selectedCoords = null;
-        let selectedAddress = '';
-        let favoritePlaces = [];
-        let currentPlaceId = null;
-        let reminderRadius = 200;
-        let reminderFromPlaceRadius = 200;
+        let tg, map, placemark, selectedCoords = null, selectedAddress = '', favoritePlaces = [], currentPlaceId = null, reminderRadius = 200;
         
         function initTelegram() {
             if (window.Telegram?.WebApp) {
                 tg = window.Telegram.WebApp;
                 tg.expand();
                 tg.ready();
-                console.log('✅ Telegram готов');
-                
-                if (typeof ymaps !== 'undefined') {
-                    ymaps.ready(initMap);
-                }
-            } else {
-                setTimeout(initTelegram, 100);
-            }
+                ymaps.ready(initMap);
+                loadData();
+            } else setTimeout(initTelegram, 100);
         }
-        initTelegram();
+        
+        function loadData() {
+            tg?.sendData(JSON.stringify({action: 'get_places'}));
+            tg?.sendData(JSON.stringify({action: 'get_reminders'}));
+        }
         
         function initMap() {
-            map = new ymaps.Map('map', {
-                center: [53.9, 27.5667],
-                zoom: 10
-            });
-            
+            map = new ymaps.Map('map', { center: [53.9, 27.5667], zoom: 10 });
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        const { latitude, longitude } = position.coords;
-                        map.setCenter([latitude, longitude], 14);
-                        if (tg) checkReminders(latitude, longitude);
-                    },
-                    error => console.log('Геолокация:', error.message)
-                );
+                navigator.geolocation.getCurrentPosition(pos => {
+                    map.setCenter([pos.coords.latitude, pos.coords.longitude], 14);
+                });
             }
-            
             map.events.add('click', e => {
-                const coords = e.get('coords');
-                selectedCoords = coords;
-                
+                selectedCoords = e.get('coords');
                 if (placemark) map.geoObjects.remove(placemark);
-                placemark = new ymaps.Placemark(coords);
+                placemark = new ymaps.Placemark(selectedCoords);
                 map.geoObjects.add(placemark);
-                
-                ymaps.geocode(coords).then(res => {
-                    if (res.geoObjects.get(0)) {
-                        selectedAddress = res.geoObjects.get(0).getAddressLine();
-                        document.getElementById('selectedAddress').textContent = selectedAddress;
-                        document.getElementById('selectedPlaceInfo').classList.remove('hidden');
-                        document.getElementById('searchInput').value = selectedAddress;
-                    }
+                ymaps.geocode(selectedCoords).then(res => {
+                    selectedAddress = res.geoObjects.get(0).getAddressLine();
+                    document.getElementById('selectedAddress').textContent = selectedAddress;
+                    document.getElementById('selectedPlaceInfo').classList.remove('hidden');
                 });
             });
         }
         
         function searchAddress(query) {
-            if (!query) {
-                document.getElementById('suggestions').style.display = 'none';
-                return;
-            }
-            
+            if (!query) return document.getElementById('suggestions').style.display = 'none';
             ymaps.suggest(query).then(suggestions => {
-                const div = document.getElementById('suggestions');
+                let div = document.getElementById('suggestions');
                 div.innerHTML = '';
-                
                 suggestions.forEach(s => {
-                    const item = document.createElement('div');
+                    let item = document.createElement('div');
                     item.className = 'suggestion-item';
                     item.textContent = s.displayName;
                     item.onclick = () => selectSuggestion(s);
                     div.appendChild(item);
                 });
-                
                 div.style.display = suggestions.length ? 'block' : 'none';
             });
         }
         
-        function selectSuggestion(suggestion) {
-            document.getElementById('searchInput').value = suggestion.displayName;
+        function selectSuggestion(s) {
+            document.getElementById('searchInput').value = s.displayName;
             document.getElementById('suggestions').style.display = 'none';
-            
-            ymaps.geocode(suggestion.displayName).then(res => {
-                if (res.geoObjects.get(0)) {
-                    const coords = res.geoObjects.get(0).geometry.getCoordinates();
-                    selectedCoords = coords;
-                    selectedAddress = suggestion.displayName;
-                    
-                    map.setCenter(coords, 16);
-                    
-                    if (placemark) map.geoObjects.remove(placemark);
-                    placemark = new ymaps.Placemark(coords);
-                    map.geoObjects.add(placemark);
-                    
-                    document.getElementById('selectedAddress').textContent = selectedAddress;
-                    document.getElementById('selectedPlaceInfo').classList.remove('hidden');
-                    document.getElementById('searchInput').value = selectedAddress;
-                }
+            ymaps.geocode(s.displayName).then(res => {
+                let coords = res.geoObjects.get(0).geometry.getCoordinates();
+                selectedCoords = coords;
+                selectedAddress = s.displayName;
+                map.setCenter(coords, 16);
+                if (placemark) map.geoObjects.remove(placemark);
+                placemark = new ymaps.Placemark(coords);
+                map.geoObjects.add(placemark);
+                document.getElementById('selectedAddress').textContent = selectedAddress;
+                document.getElementById('selectedPlaceInfo').classList.remove('hidden');
             });
         }
         
         function saveToFavorites() {
-            const name = document.getElementById('placeName').value.trim();
-            if (!name) return tg?.showAlert('Введите название');
-            if (!selectedCoords) return tg?.showAlert('Выберите место');
-            
+            let name = document.getElementById('placeName').value.trim();
+            if (!name || !selectedCoords) return tg?.showAlert('Заполните все поля');
             tg?.sendData(JSON.stringify({
                 action: 'add_place',
-                place: {
-                    name: name,
-                    address: selectedAddress,
-                    lat: selectedCoords[0],
-                    lng: selectedCoords[1]
-                }
+                place: { name, address: selectedAddress, lat: selectedCoords[0], lng: selectedCoords[1] }
             }));
-            
-            document.getElementById('placeName').value = '';
             document.getElementById('selectedPlaceInfo').classList.add('hidden');
-            if (placemark) {
-                map.geoObjects.remove(placemark);
-                placemark = null;
-            }
+            if (placemark) { map.geoObjects.remove(placemark); placemark = null; }
         }
         
         function createReminder() {
-            const text = document.getElementById('reminderText').value.trim();
-            if (!text) return tg?.showAlert('Введите текст');
-            if (!selectedCoords) return tg?.showAlert('Выберите место');
-            
+            let text = document.getElementById('reminderText').value.trim();
+            if (!text || !selectedCoords) return tg?.showAlert('Заполните все поля');
             tg?.sendData(JSON.stringify({
                 action: 'add_reminder',
                 reminder: {
-                    text: text,
-                    lat: selectedCoords[0],
-                    lng: selectedCoords[1],
-                    radius: reminderRadius,
-                    repeat: document.getElementById('repeatSelect').value,
-                    place_id: null
+                    text, lat: selectedCoords[0], lng: selectedCoords[1],
+                    radius: reminderRadius, repeat: document.getElementById('repeatSelect').value, place_id: null
                 }
             }));
-            
-            document.getElementById('reminderText').value = '';
             document.getElementById('selectedPlaceInfo').classList.add('hidden');
-            if (placemark) {
-                map.geoObjects.remove(placemark);
-                placemark = null;
-            }
+            if (placemark) { map.geoObjects.remove(placemark); placemark = null; }
         }
         
-        function createReminderFromPlace() {
-            const text = document.getElementById('reminderFromPlaceText').value.trim();
-            if (!text) return tg?.showAlert('Введите текст');
-            
-            const place = favoritePlaces.find(p => p.id == currentPlaceId);
-            if (!place) return;
-            
-            tg?.sendData(JSON.stringify({
-                action: 'add_reminder',
-                reminder: {
-                    text: text,
-                    lat: place.lat,
-                    lng: place.lng,
-                    radius: reminderFromPlaceRadius,
-                    repeat: document.getElementById('reminderRepeatSelect').value,
-                    place_id: currentPlaceId
-                }
-            }));
-            
-            hideReminderMenu();
-        }
-        
-        function updateRadius(value) {
-            reminderRadius = value;
-            document.getElementById('radiusValue').textContent = value;
-        }
-        
-        function updateReminderRadius(value) {
-            reminderFromPlaceRadius = value;
-            document.getElementById('reminderRadiusValue').textContent = value;
-        }
-        
-        function checkReminders(lat, lng) {
-            tg?.sendData(JSON.stringify({
-                action: 'check_location',
-                lat: lat,
-                lng: lng
-            }));
-        }
-        
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        function updateRadius(v) { reminderRadius = v; document.getElementById('radiusValue').textContent = v; }
+        function switchTab(t) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            
-            if (tab === 'map') {
+            if (t === 'map') {
                 document.querySelectorAll('.tab')[0].classList.add('active');
                 document.getElementById('tab-map').classList.add('active');
-            } else if (tab === 'places') {
+            } else if (t === 'places') {
                 document.querySelectorAll('.tab')[1].classList.add('active');
                 document.getElementById('tab-places').classList.add('active');
                 tg?.sendData(JSON.stringify({action: 'get_places'}));
@@ -564,64 +202,46 @@
             }
         }
         
-        window.addEventListener('message', event => {
+        window.addEventListener('message', e => {
             try {
-                const data = JSON.parse(event.data);
+                let data = JSON.parse(e.data);
                 if (data.type === 'places') {
                     favoritePlaces = data.places || [];
-                    const list = document.getElementById('favoritesList');
-                    if (!favoritePlaces.length) {
-                        list.innerHTML = '<div style="text-align:center;padding:40px">⭐ Нет избранных мест</div>';
-                    } else {
-                        list.innerHTML = favoritePlaces.map(p => `
-                            <div class="place-card" onclick="openPlaceMenu('${p.id}')">
-                                <div class="place-name">${p.name}</div>
-                                <div class="place-address">${p.address}</div>
-                            </div>
-                        `).join('');
-                    }
+                    let list = document.getElementById('favoritesList');
+                    if (!favoritePlaces.length) list.innerHTML = '<div style="text-align:center;padding:40px">⭐ Нет избранных мест</div>';
+                    else list.innerHTML = favoritePlaces.map(p => 
+                        `<div class="place-card" onclick="openPlaceMenu('${p.id}')">
+                            <div class="place-name">${p.name}</div>
+                            <div class="place-address">${p.address}</div>
+                        </div>`
+                    ).join('');
                 }
                 if (data.type === 'reminders') {
-                    const list = document.getElementById('remindersList');
-                    const reminders = data.reminders || [];
-                    if (!reminders.length) {
-                        list.innerHTML = '<div style="text-align:center;padding:40px">🔔 Нет напоминаний</div>';
-                    } else {
-                        list.innerHTML = reminders.map(r => {
-                            const place = favoritePlaces.find(p => p.id == r.place_id);
-                            return `
-                                <div class="place-card">
-                                    <div class="place-name">🔔 ${r.text}</div>
-                                    <div class="place-address">${place ? place.name : '📍 Временная'}</div>
-                                </div>
-                            `;
-                        }).join('');
-                    }
+                    let list = document.getElementById('remindersList');
+                    if (!data.reminders?.length) list.innerHTML = '<div style="text-align:center;padding:40px">🔔 Нет напоминаний</div>';
+                    else list.innerHTML = data.reminders.map(r => {
+                        let place = favoritePlaces.find(p => p.id == r.place_id);
+                        return `<div class="place-card">
+                            <div class="place-name">🔔 ${r.text}</div>
+                            <div class="place-address">${place ? place.name : '📍 Временная'}</div>
+                        </div>`;
+                    }).join('');
                 }
-                if (data.type === 'success' && tg) tg.showAlert(data.message);
-                if (data.type === 'error' && tg) tg.showAlert('❌ ' + data.message);
-            } catch (e) {}
+                if (data.type === 'success') tg?.showAlert(data.message);
+            } catch (error) {}
         });
         
-        function openPlaceMenu(placeId) {
-            const place = favoritePlaces.find(p => p.id == placeId);
+        function openPlaceMenu(id) {
+            let place = favoritePlaces.find(p => p.id == id);
             if (!place) return;
-            currentPlaceId = placeId;
+            currentPlaceId = id;
             document.getElementById('menuPlaceName').textContent = place.name;
             document.getElementById('menuPlaceAddress').textContent = place.address;
             document.getElementById('placeActionMenu').classList.add('show');
         }
         
-        function showAddReminderFromPlace() {
-            const place = favoritePlaces.find(p => p.id == currentPlaceId);
-            if (!place) return;
-            document.getElementById('reminderPlaceName').textContent = place.name;
-            document.getElementById('reminderFromPlaceMenu').classList.add('show');
-            hidePlaceMenu();
-        }
-        
         function editPlace() {
-            const place = favoritePlaces.find(p => p.id == currentPlaceId);
+            let place = favoritePlaces.find(p => p.id == currentPlaceId);
             if (!place) return;
             switchTab('map');
             selectedCoords = [place.lat, place.lng];
@@ -633,25 +253,22 @@
             document.getElementById('selectedAddress').textContent = place.address;
             document.getElementById('selectedPlaceInfo').classList.remove('hidden');
             document.getElementById('placeName').value = place.name;
-            hidePlaceMenu();
+            document.getElementById('placeActionMenu').classList.remove('show');
         }
         
         function deletePlace() {
             if (!confirm('Удалить место?')) return;
-            tg?.sendData(JSON.stringify({
-                action: 'delete_place',
-                place_id: currentPlaceId
-            }));
-            hidePlaceMenu();
-        }
-        
-        function hidePlaceMenu() {
+            tg?.sendData(JSON.stringify({action: 'delete_place', place_id: currentPlaceId}));
             document.getElementById('placeActionMenu').classList.remove('show');
         }
         
-        function hideReminderMenu() {
-            document.getElementById('reminderFromPlaceMenu').classList.remove('show');
+        function showAddReminderFromPlace() {
+            let place = favoritePlaces.find(p => p.id == currentPlaceId);
+            if (!place) return;
+            alert('Функция в разработке');
         }
+        
+        initTelegram();
     </script>
 </body>
 </html>
