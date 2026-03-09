@@ -25,7 +25,6 @@
             min-height: 100vh;
         }
         
-        /* Табы */
         .tabs {
             display: flex;
             background: #f0f0f0;
@@ -53,7 +52,6 @@
             color: white;
         }
         
-        /* Контент */
         .content {
             display: none;
             padding: 16px;
@@ -63,7 +61,6 @@
             display: block;
         }
         
-        /* Карта */
         #map {
             width: 100%;
             height: 350px;
@@ -72,7 +69,6 @@
             border: 2px solid #e0e0e0;
         }
         
-        /* ПОИСК - ЦВЕТНОЙ И ЗАМЕТНЫЙ */
         .search-container {
             position: relative;
             margin-bottom: 16px;
@@ -94,11 +90,6 @@
             background: #ffffff;
         }
         
-        .search-input::placeholder {
-            color: #666666;
-        }
-        
-        /* ПОДСКАЗКИ */
         .suggestions {
             position: absolute;
             top: 100%;
@@ -127,7 +118,6 @@
             background: #f0f0f0;
         }
         
-        /* Карточки */
         .place-card {
             background: #f5f5f5;
             border-radius: 16px;
@@ -153,16 +143,21 @@
             color: #666666;
         }
         
-        /* Кнопки */
         .btn {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             border: none;
             border-radius: 16px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             margin: 8px 0;
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
         }
         
         .btn-primary {
@@ -185,12 +180,6 @@
             color: white;
         }
         
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #000000;
-        }
-        
-        /* Меню */
         .action-menu {
             position: fixed;
             bottom: 0;
@@ -212,20 +201,11 @@
         .action-title {
             font-size: 20px;
             font-weight: 700;
-            color: #000000;
         }
         
-        .action-address {
-            color: #666666;
-            margin: 8px 0 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        /* Селекты и ползунки - ТЕПЕРЬ ВИДНЫ */
         .select-field {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             border: 2px solid #40a7e3;
             border-radius: 12px;
             font-size: 16px;
@@ -245,7 +225,6 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            color: #000000;
             font-weight: 500;
         }
         
@@ -267,12 +246,12 @@
             border: 2px solid white;
         }
         
-        /* Выбранное место */
         .selected-info {
             background: #f5f5f5;
             border-radius: 16px;
             padding: 20px;
             margin: 16px 0;
+            border: 2px solid #40a7e3;
         }
         
         .selected-address {
@@ -283,44 +262,31 @@
             border: 1px solid #e0e0e0;
         }
         
-        .label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #666666;
-            margin-bottom: 4px;
-        }
-        
         .hidden {
             display: none !important;
         }
     </style>
 </head>
 <body>
-    <!-- Табы -->
     <div class="tabs">
         <button class="tab active" onclick="switchTab('map')">🗺️ Карта</button>
         <button class="tab" onclick="switchTab('places')">⭐ Избранные места</button>
         <button class="tab" onclick="switchTab('reminders')">🔔 Напоминания</button>
     </div>
     
-    <!-- Вкладка КАРТА -->
     <div id="tab-map" class="content active">
-        <!-- ПОИСК - НАВЕРХУ, ЦВЕТНОЙ -->
         <div class="search-container">
             <input type="text" class="search-input" id="searchInput" placeholder="🔍 Введите адрес..." oninput="searchAddress(this.value)">
             <div class="suggestions" id="suggestions"></div>
         </div>
         
-        <!-- Карта -->
         <div id="map"></div>
         
-        <!-- Форма для выбранного места -->
         <div id="selectedPlaceInfo" class="selected-info hidden">
             <div class="label">📍 Выбранное место:</div>
             <div class="selected-address" id="selectedAddress"></div>
             
-            <div class="label">📝 Название</div>
-            <input type="text" class="search-input" id="placeName" placeholder="Например: Дом, Работа">
+            <input type="text" class="search-input" id="placeName" placeholder="Название места">
             
             <div class="radius-control">
                 <div class="radius-label">
@@ -330,54 +296,42 @@
                 <input type="range" class="radius-slider" min="50" max="1000" value="200" step="50" oninput="updateRadius(this.value)">
             </div>
             
-            <div class="label">🔄 Повтор</div>
             <select class="select-field" id="repeatSelect">
                 <option value="once">Один раз</option>
-                <option value="daily">Каждый день</option>
-                <option value="weekly">Каждую неделю</option>
-                <option value="monthly">Каждый месяц</option>
+                <option value="daily">На 1 день</option>
+                <option value="weekly">На 1 неделю</option>
+                <option value="monthly">На 1 месяц</option>
                 <option value="forever">Постоянно</option>
             </select>
             
-            <div class="label">📝 Текст</div>
             <input type="text" class="search-input" id="reminderText" placeholder="Текст напоминания">
             
-            <div style="display: flex; gap: 10px; margin-top: 16px;">
-                <button class="btn btn-primary" style="flex:1" onclick="saveToFavorites()">⭐ В избранные места</button>
-                <button class="btn btn-success" style="flex:1" onclick="createReminder()">🔔 Создать</button>
-            </div>
+            <button class="btn btn-primary" onclick="saveToFavorites()">⭐ В избранные места</button>
+            <button class="btn btn-success" onclick="createReminder()">🔔 Создать напоминание</button>
         </div>
     </div>
     
-    <!-- Вкладка ИЗБРАННЫЕ МЕСТА -->
     <div id="tab-places" class="content">
         <button class="btn btn-primary" onclick="switchTab('map')">➕ Добавить место</button>
         <div id="favoritesList" class="places-list"></div>
     </div>
     
-    <!-- Вкладка НАПОМИНАНИЯ -->
     <div id="tab-reminders" class="content">
         <button class="btn btn-success" onclick="switchTab('map')">🔔 Создать</button>
         <div id="remindersList" class="places-list"></div>
     </div>
     
-    <!-- Меню для избранного места -->
     <div class="action-menu" id="placeActionMenu">
         <div class="action-title" id="menuPlaceName"></div>
         <div class="action-address" id="menuPlaceAddress"></div>
-        
         <button class="btn btn-success" onclick="showAddReminderFromPlace()">🔔 Добавить напоминание</button>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-warning" style="flex:1" onclick="editPlace()">✏️ Редактировать</button>
-            <button class="btn btn-danger" style="flex:1" onclick="deletePlace()">🗑️ Удалить</button>
-        </div>
+        <button class="btn btn-warning" onclick="editPlace()">✏️ Редактировать</button>
+        <button class="btn btn-danger" onclick="deletePlace()">🗑️ Удалить</button>
         <button class="btn btn-secondary" onclick="hidePlaceMenu()">Отмена</button>
     </div>
     
-    <!-- Меню добавления напоминания -->
     <div class="action-menu" id="reminderFromPlaceMenu">
         <div class="action-title" id="reminderPlaceName"></div>
-        
         <div class="radius-control">
             <div class="radius-label">
                 <span>📏 Радиус:</span>
@@ -385,50 +339,44 @@
             </div>
             <input type="range" class="radius-slider" min="50" max="1000" value="200" step="50" oninput="updateReminderRadius(this.value)">
         </div>
-        
         <select class="select-field" id="reminderRepeatSelect">
             <option value="once">Один раз</option>
-            <option value="daily">Каждый день</option>
-            <option value="weekly">Каждую неделю</option>
-            <option value="monthly">Каждый месяц</option>
+            <option value="daily">На 1 день</option>
+            <option value="weekly">На 1 неделю</option>
+            <option value="monthly">На 1 месяц</option>
             <option value="forever">Постоянно</option>
         </select>
-        
         <input type="text" class="search-input" id="reminderFromPlaceText" placeholder="Текст напоминания">
-        
         <button class="btn btn-success" onclick="createReminderFromPlace()">🔔 Создать</button>
         <button class="btn btn-secondary" onclick="hideReminderMenu()">Отмена</button>
     </div>
     
     <script>
-        // Telegram WebApp
         let tg;
         let map, placemark;
         let selectedCoords = null;
         let selectedAddress = '';
         let favoritePlaces = [];
-        let reminders = [];
         let currentPlaceId = null;
         let reminderRadius = 200;
         let reminderFromPlaceRadius = 200;
         
         function initTelegram() {
-            if (window.Telegram && window.Telegram.WebApp) {
+            if (window.Telegram?.WebApp) {
                 tg = window.Telegram.WebApp;
                 tg.expand();
                 tg.ready();
-                console.log('Telegram WebApp готов');
+                console.log('✅ Telegram готов');
                 
-                loadFavorites();
-                loadReminders();
-                ymaps.ready(initMap);
+                if (typeof ymaps !== 'undefined') {
+                    ymaps.ready(initMap);
+                }
             } else {
                 setTimeout(initTelegram, 100);
             }
         }
         initTelegram();
         
-        // Инициализация карты
         function initMap() {
             map = new ymaps.Map('map', {
                 center: [53.9, 27.5667],
@@ -451,39 +399,29 @@
                 selectedCoords = coords;
                 
                 if (placemark) map.geoObjects.remove(placemark);
-                
                 placemark = new ymaps.Placemark(coords);
                 map.geoObjects.add(placemark);
                 
                 ymaps.geocode(coords).then(res => {
-                    selectedAddress = res.geoObjects.get(0).getAddressLine();
-                    document.getElementById('selectedAddress').textContent = selectedAddress;
-                    document.getElementById('selectedPlaceInfo').classList.remove('hidden');
-                    document.getElementById('searchInput').value = selectedAddress;
+                    if (res.geoObjects.get(0)) {
+                        selectedAddress = res.geoObjects.get(0).getAddressLine();
+                        document.getElementById('selectedAddress').textContent = selectedAddress;
+                        document.getElementById('selectedPlaceInfo').classList.remove('hidden');
+                        document.getElementById('searchInput').value = selectedAddress;
+                    }
                 });
             });
         }
         
-        // ПОИСК - ИСПРАВЛЕННЫЙ
         function searchAddress(query) {
             if (!query) {
                 document.getElementById('suggestions').style.display = 'none';
                 return;
             }
             
-            console.log('Поиск:', query);
-            
-            ymaps.suggest(query, {
-                results: 10,
-                boundedBy: [[50, 20], [70, 60]]
-            }).then(suggestions => {
+            ymaps.suggest(query).then(suggestions => {
                 const div = document.getElementById('suggestions');
                 div.innerHTML = '';
-                
-                if (suggestions.length === 0) {
-                    div.style.display = 'none';
-                    return;
-                }
                 
                 suggestions.forEach(s => {
                     const item = document.createElement('div');
@@ -493,9 +431,7 @@
                     div.appendChild(item);
                 });
                 
-                div.style.display = 'block';
-            }).catch(error => {
-                console.error('Ошибка поиска:', error);
+                div.style.display = suggestions.length ? 'block' : 'none';
             });
         }
         
@@ -504,211 +440,92 @@
             document.getElementById('suggestions').style.display = 'none';
             
             ymaps.geocode(suggestion.displayName).then(res => {
-                const coords = res.geoObjects.get(0).geometry.getCoordinates();
-                selectedCoords = coords;
-                selectedAddress = suggestion.displayName;
-                
-                map.setCenter(coords, 16);
-                
-                if (placemark) map.geoObjects.remove(placemark);
-                
-                placemark = new ymaps.Placemark(coords);
-                map.geoObjects.add(placemark);
-                
-                document.getElementById('selectedAddress').textContent = selectedAddress;
-                document.getElementById('selectedPlaceInfo').classList.remove('hidden');
-                document.getElementById('searchInput').value = selectedAddress;
+                if (res.geoObjects.get(0)) {
+                    const coords = res.geoObjects.get(0).geometry.getCoordinates();
+                    selectedCoords = coords;
+                    selectedAddress = suggestion.displayName;
+                    
+                    map.setCenter(coords, 16);
+                    
+                    if (placemark) map.geoObjects.remove(placemark);
+                    placemark = new ymaps.Placemark(coords);
+                    map.geoObjects.add(placemark);
+                    
+                    document.getElementById('selectedAddress').textContent = selectedAddress;
+                    document.getElementById('selectedPlaceInfo').classList.remove('hidden');
+                    document.getElementById('searchInput').value = selectedAddress;
+                }
             });
         }
         
-        // Сохранить в избранное
         function saveToFavorites() {
             const name = document.getElementById('placeName').value.trim();
-            if (!name) {
-                if (tg) tg.showAlert('Введите название');
-                return;
-            }
+            if (!name) return tg?.showAlert('Введите название');
+            if (!selectedCoords) return tg?.showAlert('Выберите место');
             
-            if (!selectedCoords) {
-                if (tg) tg.showAlert('Выберите место');
-                return;
-            }
+            tg?.sendData(JSON.stringify({
+                action: 'add_place',
+                place: {
+                    name: name,
+                    address: selectedAddress,
+                    lat: selectedCoords[0],
+                    lng: selectedCoords[1]
+                }
+            }));
             
-            const place = {
-                name: name,
-                address: selectedAddress,
-                lat: selectedCoords[0],
-                lng: selectedCoords[1]
-            };
-            
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'add_place',
-                    place: place
-                }));
+            document.getElementById('placeName').value = '';
+            document.getElementById('selectedPlaceInfo').classList.add('hidden');
+            if (placemark) {
+                map.geoObjects.remove(placemark);
+                placemark = null;
             }
         }
         
-        // Создать напоминание
         function createReminder() {
             const text = document.getElementById('reminderText').value.trim();
-            if (!text) {
-                if (tg) tg.showAlert('Введите текст');
-                return;
-            }
+            if (!text) return tg?.showAlert('Введите текст');
+            if (!selectedCoords) return tg?.showAlert('Выберите место');
             
-            if (!selectedCoords) {
-                if (tg) tg.showAlert('Выберите место');
-                return;
-            }
+            tg?.sendData(JSON.stringify({
+                action: 'add_reminder',
+                reminder: {
+                    text: text,
+                    lat: selectedCoords[0],
+                    lng: selectedCoords[1],
+                    radius: reminderRadius,
+                    repeat: document.getElementById('repeatSelect').value,
+                    place_id: null
+                }
+            }));
             
-            const reminder = {
-                text: text,
-                lat: selectedCoords[0],
-                lng: selectedCoords[1],
-                radius: reminderRadius,
-                repeat: document.getElementById('repeatSelect').value,
-                place_id: null
-            };
-            
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'add_reminder',
-                    reminder: reminder
-                }));
+            document.getElementById('reminderText').value = '';
+            document.getElementById('selectedPlaceInfo').classList.add('hidden');
+            if (placemark) {
+                map.geoObjects.remove(placemark);
+                placemark = null;
             }
         }
         
         function createReminderFromPlace() {
             const text = document.getElementById('reminderFromPlaceText').value.trim();
-            if (!text) {
-                if (tg) tg.showAlert('Введите текст');
-                return;
-            }
+            if (!text) return tg?.showAlert('Введите текст');
             
             const place = favoritePlaces.find(p => p.id == currentPlaceId);
             if (!place) return;
             
-            const reminder = {
-                text: text,
-                lat: place.lat,
-                lng: place.lng,
-                radius: reminderFromPlaceRadius,
-                repeat: document.getElementById('reminderRepeatSelect').value,
-                place_id: currentPlaceId
-            };
-            
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'add_reminder',
-                    reminder: reminder
-                }));
-                hideReminderMenu();
-            }
-        }
-        
-        function loadFavorites() {
-            if (tg) tg.sendData(JSON.stringify({action: 'get_places'}));
-        }
-        
-        function loadReminders() {
-            if (tg) tg.sendData(JSON.stringify({action: 'get_reminders'}));
-        }
-        
-        function showFavorites(places) {
-            favoritePlaces = places || [];
-            const list = document.getElementById('favoritesList');
-            
-            if (!favoritePlaces.length) {
-                list.innerHTML = '<div style="text-align:center;padding:40px">⭐ Нет избранных мест</div>';
-                return;
-            }
-            
-            list.innerHTML = favoritePlaces.map(p => `
-                <div class="place-card" onclick="openPlaceMenu('${p.id}')">
-                    <div class="place-name">${p.name}</div>
-                    <div class="place-address">${p.address}</div>
-                </div>
-            `).join('');
-        }
-        
-        function showReminders(remindersList) {
-            reminders = remindersList || [];
-            const list = document.getElementById('remindersList');
-            
-            if (!reminders.length) {
-                list.innerHTML = '<div style="text-align:center;padding:40px">🔔 Нет напоминаний</div>';
-                return;
-            }
-            
-            list.innerHTML = reminders.map(r => {
-                const place = favoritePlaces.find(p => p.id == r.place_id);
-                const repeatText = {
-                    'once':'Один раз','daily':'Каждый день','weekly':'Каждую неделю',
-                    'monthly':'Каждый месяц','forever':'Постоянно'
-                }[r.repeat_type] || 'Один раз';
-                
-                return `
-                    <div class="place-card">
-                        <div class="place-name">🔔 ${r.text}</div>
-                        <div class="place-address">${place ? place.name : '📍 Временная'}</div>
-                        <div style="color:#666;margin-top:8px">📏 ${r.radius}м • ${repeatText}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        function openPlaceMenu(placeId) {
-            const place = favoritePlaces.find(p => p.id == placeId);
-            if (!place) return;
-            
-            currentPlaceId = placeId;
-            document.getElementById('menuPlaceName').textContent = place.name;
-            document.getElementById('menuPlaceAddress').textContent = place.address;
-            document.getElementById('placeActionMenu').classList.add('show');
-        }
-        
-        function showAddReminderFromPlace() {
-            const place = favoritePlaces.find(p => p.id == currentPlaceId);
-            if (!place) return;
-            
-            document.getElementById('reminderPlaceName').textContent = place.name;
-            document.getElementById('reminderFromPlaceText').value = '';
-            document.getElementById('reminderFromPlaceMenu').classList.add('show');
-            hidePlaceMenu();
-        }
-        
-        function editPlace() {
-            const place = favoritePlaces.find(p => p.id == currentPlaceId);
-            if (!place) return;
-            
-            switchTab('map');
-            selectedCoords = [place.lat, place.lng];
-            selectedAddress = place.address;
-            
-            map.setCenter([place.lat, place.lng], 16);
-            
-            if (placemark) map.geoObjects.remove(placemark);
-            placemark = new ymaps.Placemark([place.lat, place.lng]);
-            map.geoObjects.add(placemark);
-            
-            document.getElementById('selectedAddress').textContent = place.address;
-            document.getElementById('selectedPlaceInfo').classList.remove('hidden');
-            document.getElementById('searchInput').value = place.address;
-            document.getElementById('placeName').value = place.name;
-            
-            hidePlaceMenu();
-        }
-        
-        function deletePlace() {
-            if (!confirm('Удалить место?')) return;
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'delete_place',
+            tg?.sendData(JSON.stringify({
+                action: 'add_reminder',
+                reminder: {
+                    text: text,
+                    lat: place.lat,
+                    lng: place.lng,
+                    radius: reminderFromPlaceRadius,
+                    repeat: document.getElementById('reminderRepeatSelect').value,
                     place_id: currentPlaceId
-                }));
-                hidePlaceMenu();
-            }
+                }
+            }));
+            
+            hideReminderMenu();
         }
         
         function updateRadius(value) {
@@ -722,13 +539,11 @@
         }
         
         function checkReminders(lat, lng) {
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'check_location',
-                    lat: lat,
-                    lng: lng
-                }));
-            }
+            tg?.sendData(JSON.stringify({
+                action: 'check_location',
+                lat: lat,
+                lng: lng
+            }));
         }
         
         function switchTab(tab) {
@@ -738,16 +553,96 @@
             if (tab === 'map') {
                 document.querySelectorAll('.tab')[0].classList.add('active');
                 document.getElementById('tab-map').classList.add('active');
-                setTimeout(() => map?.container?.fitToViewport(), 100);
             } else if (tab === 'places') {
                 document.querySelectorAll('.tab')[1].classList.add('active');
                 document.getElementById('tab-places').classList.add('active');
-                loadFavorites();
+                tg?.sendData(JSON.stringify({action: 'get_places'}));
             } else {
                 document.querySelectorAll('.tab')[2].classList.add('active');
                 document.getElementById('tab-reminders').classList.add('active');
-                loadReminders();
+                tg?.sendData(JSON.stringify({action: 'get_reminders'}));
             }
+        }
+        
+        window.addEventListener('message', event => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'places') {
+                    favoritePlaces = data.places || [];
+                    const list = document.getElementById('favoritesList');
+                    if (!favoritePlaces.length) {
+                        list.innerHTML = '<div style="text-align:center;padding:40px">⭐ Нет избранных мест</div>';
+                    } else {
+                        list.innerHTML = favoritePlaces.map(p => `
+                            <div class="place-card" onclick="openPlaceMenu('${p.id}')">
+                                <div class="place-name">${p.name}</div>
+                                <div class="place-address">${p.address}</div>
+                            </div>
+                        `).join('');
+                    }
+                }
+                if (data.type === 'reminders') {
+                    const list = document.getElementById('remindersList');
+                    const reminders = data.reminders || [];
+                    if (!reminders.length) {
+                        list.innerHTML = '<div style="text-align:center;padding:40px">🔔 Нет напоминаний</div>';
+                    } else {
+                        list.innerHTML = reminders.map(r => {
+                            const place = favoritePlaces.find(p => p.id == r.place_id);
+                            return `
+                                <div class="place-card">
+                                    <div class="place-name">🔔 ${r.text}</div>
+                                    <div class="place-address">${place ? place.name : '📍 Временная'}</div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+                if (data.type === 'success' && tg) tg.showAlert(data.message);
+                if (data.type === 'error' && tg) tg.showAlert('❌ ' + data.message);
+            } catch (e) {}
+        });
+        
+        function openPlaceMenu(placeId) {
+            const place = favoritePlaces.find(p => p.id == placeId);
+            if (!place) return;
+            currentPlaceId = placeId;
+            document.getElementById('menuPlaceName').textContent = place.name;
+            document.getElementById('menuPlaceAddress').textContent = place.address;
+            document.getElementById('placeActionMenu').classList.add('show');
+        }
+        
+        function showAddReminderFromPlace() {
+            const place = favoritePlaces.find(p => p.id == currentPlaceId);
+            if (!place) return;
+            document.getElementById('reminderPlaceName').textContent = place.name;
+            document.getElementById('reminderFromPlaceMenu').classList.add('show');
+            hidePlaceMenu();
+        }
+        
+        function editPlace() {
+            const place = favoritePlaces.find(p => p.id == currentPlaceId);
+            if (!place) return;
+            switchTab('map');
+            selectedCoords = [place.lat, place.lng];
+            selectedAddress = place.address;
+            map.setCenter([place.lat, place.lng], 16);
+            if (placemark) map.geoObjects.remove(placemark);
+            placemark = new ymaps.Placemark([place.lat, place.lng]);
+            map.geoObjects.add(placemark);
+            document.getElementById('selectedAddress').textContent = place.address;
+            document.getElementById('selectedPlaceInfo').classList.remove('hidden');
+            document.getElementById('placeName').value = place.name;
+            hidePlaceMenu();
+        }
+        
+        function deletePlace() {
+            if (!confirm('Удалить место?')) return;
+            tg?.sendData(JSON.stringify({
+                action: 'delete_place',
+                place_id: currentPlaceId
+            }));
+            hidePlaceMenu();
         }
         
         function hidePlaceMenu() {
@@ -757,17 +652,6 @@
         function hideReminderMenu() {
             document.getElementById('reminderFromPlaceMenu').classList.remove('show');
         }
-        
-        // Слушаем ответы от бота
-        window.addEventListener('message', event => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.type === 'places') showFavorites(data.places);
-                if (data.type === 'reminders') showReminders(data.reminders);
-                if (data.type === 'success' && tg) tg.showAlert(data.message);
-                if (data.type === 'error' && tg) tg.showAlert('❌ ' + data.message);
-            } catch (e) {}
-        });
     </script>
 </body>
 </html>
