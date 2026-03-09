@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Гео-Напоминалки</title>
     
+    <!-- Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <!-- Яндекс Карты API -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=84e764a6-fd03-4740-beb1-328a4072c4ca&lang=ru_RU" type="text/javascript"></script>
     
@@ -19,6 +22,7 @@
         body {
             background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #000);
+            padding-bottom: 30px;
         }
         
         .tabs {
@@ -26,6 +30,9 @@
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             padding: 10px;
             gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .tab {
@@ -38,6 +45,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            transition: 0.2s;
         }
         
         .tab.active {
@@ -82,6 +90,13 @@
             padding: 16px;
             margin-bottom: 10px;
             cursor: pointer;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        
+        .place-card:active {
+            border-color: var(--tg-theme-button-color, #40a7e3);
+            transform: scale(0.98);
         }
         
         .place-name {
@@ -151,6 +166,10 @@
             border: 1px solid var(--tg-theme-hint-color, #ccc);
             border-radius: 8px;
             display: none;
+            background: var(--tg-theme-bg-color, #fff);
+            position: absolute;
+            width: calc(100% - 32px);
+            z-index: 1000;
         }
         
         .suggestion-item {
@@ -174,6 +193,20 @@
         .radius-control input {
             width: 100%;
         }
+        
+        .repeat-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            margin: 10px 0;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -188,28 +221,43 @@
     <div id="map-tab" class="content active">
         <div id="map"></div>
         
-        <input type="text" class="search-input" id="searchInput" placeholder="Введите адрес..." oninput="searchAddress(this.value)">
-        <div class="suggestions" id="suggestions"></div>
+        <div style="position: relative;">
+            <input type="text" class="search-input" id="searchInput" placeholder="Введите адрес..." oninput="searchAddress(this.value)">
+            <div class="suggestions" id="suggestions"></div>
+        </div>
         
         <div id="selectedPlaceInfo" style="display: none;">
-            <h3>Выбранное место:</h3>
+            <h3>📍 Выбранное место:</h3>
             <p id="selectedAddress"></p>
             <input type="text" class="search-input" id="placeName" placeholder="Название места (например: Дом)">
-            <button class="btn btn-blue" onclick="saveFavorite()">⭐ Добавить в избранное</button>
             
             <div class="radius-control">
-                <label>Радиус срабатывания: <span id="radiusValue">200</span> м</label>
+                <label>📏 Радиус срабатывания: <span id="radiusValue">200</span> м</label>
                 <input type="range" min="50" max="1000" value="200" step="50" oninput="updateRadius(this.value)">
             </div>
             
-            <input type="text" class="search-input" id="reminderText" placeholder="Текст напоминания">
-            <button class="btn btn-blue" onclick="addReminder()">🔔 Создать напоминание</button>
+            <div>
+                <label>🔄 Повтор:</label>
+                <select id="repeatSelect" class="repeat-select">
+                    <option value="once">Один раз</option>
+                    <option value="daily">Каждый день</option>
+                    <option value="weekly">Каждую неделю</option>
+                    <option value="monthly">Каждый месяц</option>
+                    <option value="forever">Постоянно (пока не удалю)</option>
+                </select>
+            </div>
+            
+            <input type="text" class="search-input" id="reminderText" placeholder="Текст напоминания (например: Купить молоко)">
+            
+            <button class="btn btn-blue" onclick="saveFavorite()">⭐ Сохранить в избранное</button>
+            <button class="btn btn-green" onclick="addReminder()" style="margin-top: 10px;">🔔 Создать напоминание</button>
         </div>
     </div>
     
     <!-- Вкладка с избранным -->
     <div id="places-tab" class="content">
         <div class="places-list" id="placesList"></div>
+        <button class="btn btn-blue" onclick="showTab('map')">➕ Добавить место на карте</button>
     </div>
     
     <!-- Вкладка с напоминаниями -->
@@ -222,36 +270,64 @@
         <h3 id="actionPlaceName"></h3>
         <p id="actionPlaceAddress"></p>
         
+        <div>
+            <label>🔄 Повтор:</label>
+            <select id="actionRepeatSelect" class="repeat-select">
+                <option value="once">Один раз</option>
+                <option value="daily">Каждый день</option>
+                <option value="weekly">Каждую неделю</option>
+                <option value="monthly">Каждый месяц</option>
+                <option value="forever">Постоянно</option>
+            </select>
+        </div>
+        
+        <input type="text" class="search-input" id="actionReminderText" placeholder="Текст напоминания">
+        
         <div class="action-buttons">
-            <button class="btn btn-green" onclick="showAddReminder()">🟢 Добавить напоминание</button>
-            <button class="btn btn-red" onclick="deletePlace()">🔴 Удалить</button>
+            <button class="btn btn-green" onclick="addReminderFromPlace()">🟢 Создать</button>
+            <button class="btn btn-red" onclick="deletePlace()">🔴 Удалить место</button>
         </div>
         
         <button class="btn btn-blue" onclick="hideActionMenu()">Закрыть</button>
     </div>
     
     <script>
-        // Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-        
-        // Данные
+        // Ждем загрузки Telegram WebApp
+        let tg;
         let map, placemark;
         let selectedCoords = null;
         let selectedAddress = '';
         let favoritePlaces = [];
+        let reminders = [];
         let currentPlaceId = null;
         let reminderRadius = 200;
-        let myUserId = tg.initDataUnsafe?.user?.id;
+        let myUserId = null;
         
-        // Загружаем данные при старте
-        loadFavorites();
+        function initTelegram() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                tg.expand();
+                tg.ready();
+                console.log('✅ Telegram WebApp инициализирован');
+                myUserId = tg.initDataUnsafe?.user?.id;
+                
+                // Загружаем данные
+                loadFavorites();
+                loadReminders();
+                
+                // Инициализируем карту
+                ymaps.ready(initMap);
+            } else {
+                console.log('⏳ Ожидание Telegram WebApp...');
+                setTimeout(initTelegram, 100);
+            }
+        }
         
-        // Инициализация карты
-        ymaps.ready(initMap);
+        // Запускаем
+        initTelegram();
         
         function initMap() {
+            console.log('🗺️ Инициализация карты...');
             map = new ymaps.Map('map', {
                 center: [55.76, 37.64],
                 zoom: 10
@@ -263,11 +339,11 @@
                     position => {
                         const { latitude, longitude } = position.coords;
                         map.setCenter([latitude, longitude], 14);
+                        console.log('📍 Текущая позиция:', latitude, longitude);
                         
-                        // Отправляем на сервер для проверки напоминаний
-                        checkReminders(latitude, longitude);
+                        if (tg) checkReminders(latitude, longitude);
                     },
-                    error => console.log('Геолокация не доступна')
+                    error => console.log('⚠️ Геолокация не доступна:', error.message)
                 );
             }
             
@@ -293,11 +369,13 @@
                     document.getElementById('selectedAddress').textContent = selectedAddress;
                     document.getElementById('selectedPlaceInfo').style.display = 'block';
                     document.getElementById('searchInput').value = selectedAddress;
+                    console.log('📍 Выбран адрес:', selectedAddress);
                 });
             });
+            
+            console.log('✅ Карта готова');
         }
         
-        // Поиск адреса
         function searchAddress(query) {
             if (!query) {
                 document.getElementById('suggestions').style.display = 'none';
@@ -317,6 +395,8 @@
                 });
                 
                 suggestionsDiv.style.display = suggestions.length ? 'block' : 'none';
+            }).catch(error => {
+                console.error('❌ Ошибка поиска:', error);
             });
         }
         
@@ -324,7 +404,6 @@
             document.getElementById('searchInput').value = suggestion.displayName;
             document.getElementById('suggestions').style.display = 'none';
             
-            // Получаем координаты
             ymaps.geocode(suggestion.displayName).then(res => {
                 const coords = res.geoObjects.get(0).geometry.getCoordinates();
                 selectedCoords = coords;
@@ -346,11 +425,15 @@
             });
         }
         
-        // Сохранить в избранное
         function saveFavorite() {
             const name = document.getElementById('placeName').value;
             if (!name) {
-                tg.showAlert('Введите название места');
+                if (tg) tg.showAlert('Введите название места');
+                return;
+            }
+            
+            if (!selectedCoords) {
+                if (tg) tg.showAlert('Выберите место на карте');
                 return;
             }
             
@@ -361,33 +444,114 @@
                 lng: selectedCoords[1]
             };
             
-            tg.sendData(JSON.stringify({
-                action: 'add_place',
-                place: place
-            }));
+            console.log('📦 Сохранение места:', place);
             
-            tg.showAlert('✅ Место добавлено в избранное');
-            setTimeout(() => loadFavorites(), 1000);
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'add_place',
+                    place: place
+                }));
+                
+                tg.showAlert('✅ Место добавлено в избранное');
+                setTimeout(() => {
+                    loadFavorites();
+                    showTab('places');
+                }, 1000);
+            }
         }
         
-        // Загрузить избранное
-        function loadFavorites() {
-            tg.sendData(JSON.stringify({
-                action: 'get_places'
-            }));
-        }
-        
-        // Показать избранное
-        function showFavorites(places) {
-            favoritePlaces = places;
-            const list = document.getElementById('placesList');
-            
-            if (!places || places.length === 0) {
-                list.innerHTML = '<p style="text-align: center; padding: 40px;">Нет избранных мест</p>';
+        function addReminder() {
+            const text = document.getElementById('reminderText').value;
+            if (!text) {
+                if (tg) tg.showAlert('Введите текст напоминания');
                 return;
             }
             
-            list.innerHTML = places.map(place => `
+            if (!selectedCoords) {
+                if (tg) tg.showAlert('Выберите место на карте');
+                return;
+            }
+            
+            const repeat = document.getElementById('repeatSelect').value;
+            
+            const reminder = {
+                text: text,
+                lat: selectedCoords[0],
+                lng: selectedCoords[1],
+                radius: reminderRadius,
+                repeat: repeat,
+                place_id: currentPlaceId
+            };
+            
+            console.log('📦 Создание напоминания:', reminder);
+            
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'add_reminder',
+                    reminder: reminder
+                }));
+                
+                tg.showAlert('✅ Напоминание создано');
+                document.getElementById('reminderText').value = '';
+                setTimeout(() => loadReminders(), 1000);
+            }
+        }
+        
+        function addReminderFromPlace() {
+            const text = document.getElementById('actionReminderText').value;
+            if (!text) {
+                if (tg) tg.showAlert('Введите текст напоминания');
+                return;
+            }
+            
+            const place = favoritePlaces.find(p => p.id == currentPlaceId);
+            if (!place) return;
+            
+            const repeat = document.getElementById('actionRepeatSelect').value;
+            
+            const reminder = {
+                text: text,
+                lat: place.lat,
+                lng: place.lng,
+                radius: 200,
+                repeat: repeat,
+                place_id: currentPlaceId
+            };
+            
+            console.log('📦 Создание напоминания из меню:', reminder);
+            
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'add_reminder',
+                    reminder: reminder
+                }));
+                
+                tg.showAlert('✅ Напоминание создано');
+                hideActionMenu();
+                setTimeout(() => loadReminders(), 1000);
+            }
+        }
+        
+        function loadFavorites() {
+            console.log('📦 Запрос списка избранного');
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'get_places'
+                }));
+            }
+        }
+        
+        function showFavorites(places) {
+            console.log('📦 Получены места:', places);
+            favoritePlaces = places || [];
+            const list = document.getElementById('placesList');
+            
+            if (!favoritePlaces || favoritePlaces.length === 0) {
+                list.innerHTML = '<p style="text-align: center; padding: 40px;">⭐ Нет избранных мест</p>';
+                return;
+            }
+            
+            list.innerHTML = favoritePlaces.map(place => `
                 <div class="place-card" onclick="openPlaceMenu('${place.id}')">
                     <div class="place-name">${place.name}</div>
                     <div class="place-address">${place.address}</div>
@@ -395,7 +559,48 @@
             `).join('');
         }
         
-        // Открыть меню места
+        function loadReminders() {
+            console.log('📦 Запрос списка напоминаний');
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'get_reminders'
+                }));
+            }
+        }
+        
+        function showReminders(remindersList) {
+            console.log('📦 Получены напоминания:', remindersList);
+            reminders = remindersList || [];
+            const list = document.getElementById('remindersList');
+            
+            if (!reminders || reminders.length === 0) {
+                list.innerHTML = '<p style="text-align: center; padding: 40px;">🔔 Нет активных напоминаний</p>';
+                return;
+            }
+            
+            list.innerHTML = reminders.map(r => {
+                const place = favoritePlaces.find(p => p.id == r.place_id);
+                const placeName = place ? place.name : '📍 Указанное место';
+                const repeatText = {
+                    'once': 'Один раз',
+                    'daily': 'Каждый день',
+                    'weekly': 'Каждую неделю',
+                    'monthly': 'Каждый месяц',
+                    'forever': 'Постоянно'
+                }[r.repeat] || 'Один раз';
+                
+                return `
+                    <div class="place-card">
+                        <div class="place-name">🔔 ${r.text}</div>
+                        <div class="place-address">${placeName}</div>
+                        <div style="font-size: 12px; color: var(--tg-theme-hint-color); margin-top: 5px;">
+                            🔄 ${repeatText} | 📏 ${r.radius || 200}м
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
         function openPlaceMenu(placeId) {
             const place = favoritePlaces.find(p => p.id == placeId);
             if (!place) return;
@@ -403,76 +608,41 @@
             currentPlaceId = placeId;
             document.getElementById('actionPlaceName').textContent = place.name;
             document.getElementById('actionPlaceAddress').textContent = place.address;
+            document.getElementById('actionReminderText').value = '';
             document.getElementById('actionMenu').classList.add('show');
         }
         
-        // Удалить место
         function deletePlace() {
             if (!confirm('Удалить место из избранного?')) return;
             
-            tg.sendData(JSON.stringify({
-                action: 'delete_place',
-                place_id: currentPlaceId
-            }));
-            
-            hideActionMenu();
-            tg.showAlert('✅ Место удалено');
-            setTimeout(() => loadFavorites(), 1000);
-        }
-        
-        // Показать добавление напоминания
-        function showAddReminder() {
-            const place = favoritePlaces.find(p => p.id == currentPlaceId);
-            if (!place) return;
-            
-            document.getElementById('selectedAddress').textContent = place.address;
-            document.getElementById('selectedPlaceInfo').style.display = 'block';
-            document.getElementById('placeName').value = place.name;
-            selectedCoords = [place.lat, place.lng];
-            
-            hideActionMenu();
-            showTab('map');
-        }
-        
-        // Добавить напоминание
-        function addReminder() {
-            const text = document.getElementById('reminderText').value;
-            if (!text) {
-                tg.showAlert('Введите текст напоминания');
-                return;
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'delete_place',
+                    place_id: currentPlaceId
+                }));
+                
+                hideActionMenu();
+                tg.showAlert('✅ Место удалено');
+                setTimeout(() => loadFavorites(), 1000);
             }
-            
-            tg.sendData(JSON.stringify({
-                action: 'add_reminder',
-                reminder: {
-                    place_id: currentPlaceId,
-                    text: text,
-                    lat: selectedCoords[0],
-                    lng: selectedCoords[1],
-                    radius: reminderRadius
-                }
-            }));
-            
-            tg.showAlert('✅ Напоминание создано');
-            document.getElementById('reminderText').value = '';
         }
         
-        // Обновить радиус
         function updateRadius(value) {
             reminderRadius = value;
             document.getElementById('radiusValue').textContent = value;
         }
         
-        // Проверить напоминания
         function checkReminders(lat, lng) {
-            tg.sendData(JSON.stringify({
-                action: 'check_location',
-                lat: lat,
-                lng: lng
-            }));
+            console.log('📦 Проверка напоминаний:', lat, lng);
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'check_location',
+                    lat: lat,
+                    lng: lng
+                }));
+            }
         }
         
-        // Показать вкладку
         function showTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -488,6 +658,7 @@
             } else {
                 document.querySelectorAll('.tab')[2].classList.add('active');
                 document.getElementById('reminders-tab').classList.add('active');
+                loadReminders();
             }
         }
         
@@ -495,9 +666,18 @@
             document.getElementById('actionMenu').classList.remove('show');
         }
         
-        // Слушаем сообщения от бота
         window.addEventListener('message', event => {
-            // Сюда придут данные от бота
+            console.log('📦 Сообщение от бота:', event.data);
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'places') {
+                    showFavorites(data.places);
+                } else if (data.type === 'reminders') {
+                    showReminders(data.reminders);
+                }
+            } catch (e) {
+                console.error('❌ Ошибка обработки:', e);
+            }
         });
     </script>
 </body>
