@@ -12,6 +12,7 @@ WEB_APP_URL = "https://geo-bot-site.onrender.com"
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ========== БАЗА ДАННЫХ ==========
 def get_db():
     conn = sqlite3.connect('geo_bot.db')
     conn.row_factory = sqlite3.Row
@@ -21,7 +22,6 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Пользователи
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
@@ -29,12 +29,10 @@ def init_db():
             first_name TEXT,
             last_lat REAL,
             last_lng REAL,
-            location_updated TIMESTAMP,
-            location_denied INTEGER DEFAULT 0
+            last_location_update TIMESTAMP
         )
     ''')
     
-    # Избранные места
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS favorite_places (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +45,6 @@ def init_db():
         )
     ''')
     
-    # Напоминания
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS reminders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,7 +67,6 @@ def init_db():
     print("✅ База данных инициализирована")
 
 def haversine(lat1, lon1, lat2, lon2):
-    """Расстояние между координатами в метрах"""
     R = 6371000
     phi1 = math.radians(lat1)
     phi2 = math.radians(lat2)
@@ -82,7 +78,6 @@ def haversine(lat1, lon1, lat2, lon2):
     return R*c
 
 def calculate_expiration(repeat_type):
-    """Вычисляет дату истечения напоминания"""
     now = datetime.now()
     if repeat_type == 'daily':
         return now + timedelta(days=1)
@@ -91,49 +86,163 @@ def calculate_expiration(repeat_type):
     elif repeat_type == 'monthly':
         return now + timedelta(days=30)
     elif repeat_type == 'forever':
-        return None  # Никогда не истекает
-    else:  # once
-        return now + timedelta(days=1)  # Живёт 1 день после срабатывания
+        return None
+    else:
+        return now + timedelta(days=1)
 
+# ========== КОМАНДЫ ==========
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Главное меню с инструкцией по геолокации"""
     user = update.effective_user
     
-    # Сохраняем пользователя
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('''
-        INSERT OR REPLACE INTO users (user_id, username, first_name, location_denied)
-        VALUES (?, ?, ?, 0)
-    ''', (user.id, user.username, user.first_name))
+    cursor.execute('INSERT OR REPLACE INTO users (user_id, username, first_name) VALUES (?, ?, ?)',
+                  (user.id, user.username, user.first_name))
     conn.commit()
     conn.close()
     
-    # Кнопка с Web App
-    keyboard = [[
-        InlineKeyboardButton(
-            "🗺️ Открыть карту и напоминания",
-            web_app=WebAppInfo(url=WEB_APP_URL)
-        )
-    ]]
+    keyboard = [[InlineKeyboardButton("🗺️ Открыть карту", web_app=WebAppInfo(url=WEB_APP_URL))]]
     
-    # Подробная инструкция по геолокации
     await update.message.reply_text(
         f"👋 Привет, {user.first_name}!\n\n"
-        "📍 **КАК ВКЛЮЧИТЬ ГЕОЛОКАЦИЮ:**\n\n"
-        "📱 **Android:**\n"
-        "1. Настройки Telegram → Конфиденциальность\n"
-        "2. Геопозиция → Разрешить доступ → Всегда\n\n"
-        "🍎 **iPhone:**\n"
-        "1. Настройки телефона → Telegram\n"
-        "2. Геопозиция → Всегда\n\n"
-        "❓ **Зачем это нужно?**\n"
-        "Чтобы я мог напоминать о делах, когда ты рядом с нужным местом,\n"
-        "даже если Telegram закрыт!\n\n"
+        "📍 **КАК ВКЛЮЧИТЬ ГЕОЛОКАЦИЮ 24/7:**\n"
+        "1. Открой чат со мной\n"
+        "2. Нажми на скрепку 📎\n"
+        "3. Выбери «Геопозиция»\n"
+        "4. Нажми «Отметить как точку»\n"
+        "5. Включи **«Пока не отключу»**\n\n"
+        "✅ После этого я буду получать твои координаты каждые 10 секунд\n"
+        "и напоминать о делах в нужных местах!\n\n"
         "👇 **Нажми кнопку, чтобы открыть карту**",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode='Markdown'
     )
+
+async def handle_location(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Получаем геолокацию от пользователя (каждые 5-10 секунд при трансляции)"""
+    user = update.effective_user
+    location = update.message.location
+    
+    print(f"📍 Получена геолокация от {user.id}: {location.latitude}, {location.longitude}")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Обновляем время последней геолокации
+    cursor.execute('''
+        UPDATE users 
+        SET last_lat = ?, last_lng = ?, last_location_update = ?
+        WHERE user_id = ?
+    ''', (location.latitude, location.longitude, datetime.now(), user.id))
+    conn.commit()
+    
+    # Проверяем активные напоминания
+    cursor.execute('''
+        SELECT * FROM reminders 
+        WHERE user_id = ? AND is_active = 1 
+        AND (expires_at IS NULL OR expires_at > ?)
+    ''', (user.id, datetime.now()))
+    
+    active_reminders = cursor.fetchall()
+    
+    for r in active_reminders:
+        distance = haversine(location.latitude, location.longitude, r['lat'], r['lng'])
+        
+        if distance <= r['radius']:
+            # Проверяем не отправляли ли недавно (для повторяющихся)
+            if not r['last_triggered'] or \
+               (datetime.now() - datetime.fromisoformat(r['last_triggered'])).seconds > 3600:
+                
+                cursor.execute('UPDATE reminders SET last_triggered = ? WHERE id = ?',
+                             (datetime.now(), r['id']))
+                
+                # Для одноразовых - деактивируем
+                if r['repeat_type'] == 'once':
+                    cursor.execute('UPDATE reminders SET is_active = 0 WHERE id = ?', (r['id'],))
+                
+                conn.commit()
+                
+                await context.bot.send_message(
+                    chat_id=user.id,
+                    text=f"🔔 **НАПОМИНАНИЕ!**\n\n{r['text']}",
+                    parse_mode='Markdown'
+                )
+                print(f"✅ Отправлено напоминание {r['id']}")
+    
+    conn.close()
+
+async def check_location_loss(context: ContextTypes.DEFAULT_TYPE):
+    """Проверяет потерю геолокации (каждую минуту)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Ищем пользователей с активными напоминаниями,
+    # у которых геолокация старше 70 секунд
+    cursor.execute('''
+        SELECT DISTINCT u.user_id, u.first_name, u.last_location_update
+        FROM users u
+        JOIN reminders r ON u.user_id = r.user_id
+        WHERE r.is_active = 1 
+        AND (u.last_location_update IS NULL 
+             OR u.last_location_update < datetime('now', '-70 seconds'))
+    ''')
+    
+    lost_users = cursor.fetchall()
+    conn.close()
+    
+    for user in lost_users:
+        try:
+            # Проверяем, не отправляли ли уже уведомление за последние 5 минут
+            cache_key = f"location_warning_{user['user_id']}"
+            if context.bot_data.get(cache_key):
+                continue
+            
+            time_str = "никогда"
+            if user['last_location_update']:
+                last = datetime.fromisoformat(user['last_location_update'])
+                minutes_ago = int((datetime.now() - last).total_seconds() / 60)
+                time_str = f"{minutes_ago} минут назад"
+            
+            await context.bot.send_message(
+                chat_id=user['user_id'],
+                text="⚠️ **ГЕОЛОКАЦИЯ ПОТЕРЯНА!**\n\n"
+                     f"Последние координаты были получены {time_str}.\n"
+                     "У тебя есть активные напоминания, но я не вижу где ты.\n\n"
+                     "📍 **ЧТО ДЕЛАТЬ:**\n"
+                     "1. Открой чат со мной\n"
+                     "2. Нажми на скрепку 📎 → Геопозиция\n"
+                     "3. Выбери **«Пока не отключу»**\n\n"
+                     "🔔 Как только геолокация появится, я продолжу следить!",
+                parse_mode='Markdown'
+            )
+            
+            # Ставим метку на 5 минут
+            context.bot_data[cache_key] = True
+            context.job_queue.run_once(
+                lambda ctx: ctx.bot_data.pop(cache_key, None), 
+                300
+            )
+            
+            print(f"📨 Уведомление о потере гео отправлено {user['user_id']}")
+        except Exception as e:
+            print(f"❌ Ошибка уведомления: {e}")
+
+async def check_expired_reminders(context: ContextTypes.DEFAULT_TYPE):
+    """Деактивирует истекшие напоминания"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        UPDATE reminders SET is_active = 0 
+        WHERE expires_at IS NOT NULL AND expires_at < ?
+    ''', (datetime.now(),))
+    
+    affected = cursor.rowcount
+    if affected > 0:
+        print(f"🧹 Деактивировано {affected} истекших напоминаний")
+    
+    conn.commit()
+    conn.close()
 
 async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка данных из Web App"""
@@ -141,7 +250,7 @@ async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not data:
         return
     
-    print(f"📦 Получено: {data.data}")
+    print(f"📦 Получено из Web App: {data.data}")
     
     try:
         payload = json.loads(data.data)
@@ -151,7 +260,6 @@ async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
         conn = get_db()
         cursor = conn.cursor()
         
-        # ===== ИЗБРАННЫЕ МЕСТА =====
         if action == 'get_places':
             cursor.execute('SELECT * FROM favorite_places WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
             places = cursor.fetchall()
@@ -178,7 +286,6 @@ async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 json.dumps({'type': 'success', 'message': '✅ Место удалено'})
             )
         
-        # ===== НАПОМИНАНИЯ =====
         elif action == 'get_reminders':
             cursor.execute('''
                 SELECT * FROM reminders 
@@ -194,147 +301,26 @@ async def web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif action == 'add_reminder':
             r = payload['reminder']
             expires_at = calculate_expiration(r.get('repeat', 'once'))
-            
             cursor.execute('''
                 INSERT INTO reminders 
                 (user_id, place_id, text, lat, lng, radius, repeat_type, created_at, expires_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                user_id, 
-                r.get('place_id'), 
-                r['text'], 
-                r['lat'], 
-                r['lng'], 
-                r.get('radius', 200),
-                r.get('repeat', 'once'),
-                datetime.now(),
-                expires_at
-            ))
+            ''', (user_id, r.get('place_id'), r['text'], r['lat'], r['lng'], 
+                  r.get('radius', 200), r.get('repeat', 'once'), datetime.now(), expires_at))
             conn.commit()
             await update.effective_message.reply_text(
                 json.dumps({'type': 'success', 'message': '✅ Напоминание создано'})
             )
         
-        # ===== ПРОВЕРКА ГЕОЛОКАЦИИ =====
-        elif action == 'check_location':
-            lat = payload['lat']
-            lng = payload['lng']
-            
-            # Обновляем позицию пользователя
-            cursor.execute('''
-                UPDATE users SET last_lat = ?, last_lng = ?, location_updated = ?, location_denied = 0
-                WHERE user_id = ?
-            ''', (lat, lng, datetime.now(), user_id))
-            conn.commit()
-            
-            # Получаем активные напоминания
-            cursor.execute('''
-                SELECT * FROM reminders 
-                WHERE user_id = ? AND is_active = 1 
-                AND (expires_at IS NULL OR expires_at > ?)
-            ''', (user_id, datetime.now()))
-            
-            active_reminders = cursor.fetchall()
-            triggered = []
-            
-            for r in active_reminders:
-                distance = haversine(lat, lng, r['lat'], r['lng'])
-                
-                if distance <= r['radius']:
-                    # Проверяем не отправляли ли недавно (для повторяющихся)
-                    if not r['last_triggered'] or \
-                       (datetime.now() - datetime.fromisoformat(r['last_triggered'])).seconds > 3600:
-                        
-                        # Обновляем время последнего срабатывания
-                        cursor.execute('''
-                            UPDATE reminders SET last_triggered = ? WHERE id = ?
-                        ''', (datetime.now(), r['id']))
-                        
-                        # Для одноразовых - деактивируем
-                        if r['repeat_type'] == 'once':
-                            cursor.execute('''
-                                UPDATE reminders SET is_active = 0 WHERE id = ?
-                            ''', (r['id'],))
-                        
-                        conn.commit()
-                        
-                        # Отправляем уведомление
-                        await context.bot.send_message(
-                            chat_id=user_id,
-                            text=f"🔔 **НАПОМИНАНИЕ!**\n\n{r['text']}",
-                            parse_mode='Markdown'
-                        )
-                        triggered.append(r['id'])
-                        print(f"✅ Отправлено напоминание {r['id']}")
-            
-            # Очищаем истекшие напоминания
-            cursor.execute('''
-                UPDATE reminders SET is_active = 0 
-                WHERE user_id = ? AND expires_at IS NOT NULL AND expires_at < ?
-            ''', (user_id, datetime.now()))
-            conn.commit()
-            
-            print(f"📊 Проверено {len(active_reminders)} напоминаний, отправлено {len(triggered)}")
-        
         conn.close()
         
     except Exception as e:
         print(f"❌ Ошибка: {e}")
-        logger.error(f"Ошибка: {e}")
         await update.effective_message.reply_text(
             json.dumps({'type': 'error', 'message': str(e)})
         )
 
-async def check_expired_reminders(context: ContextTypes.DEFAULT_TYPE):
-    """Периодическая проверка истекших напоминаний"""
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    # Деактивируем истекшие
-    cursor.execute('''
-        UPDATE reminders SET is_active = 0 
-        WHERE expires_at IS NOT NULL AND expires_at < ?
-    ''', (datetime.now(),))
-    
-    affected = cursor.rowcount
-    if affected > 0:
-        print(f"🧹 Деактивировано {affected} истекших напоминаний")
-    
-    conn.commit()
-    conn.close()
-
-async def notify_location_denied(context: ContextTypes.DEFAULT_TYPE):
-    """Уведомление пользователей, которые отключили геолокацию"""
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    # Находим пользователей с активными напоминаниями, но без геолокации
-    cursor.execute('''
-        SELECT DISTINCT u.user_id, u.first_name 
-        FROM users u
-        JOIN reminders r ON u.user_id = r.user_id
-        WHERE r.is_active = 1 AND u.location_denied = 1
-    ''')
-    
-    users = cursor.fetchall()
-    conn.close()
-    
-    for user in users:
-        try:
-            await context.bot.send_message(
-                chat_id=user['user_id'],
-                text="⚠️ **ВНИМАНИЕ!**\n\n"
-                     "У тебя есть активные напоминания, но геолокация отключена!\n\n"
-                     "📍 **Как включить:**\n"
-                     "Android: Настройки Telegram → Конфиденциальность → Геопозиция → Всегда\n"
-                     "iPhone: Настройки → Telegram → Геопозиция → Всегда\n\n"
-                     "После включения я снова смогу напоминать о делах.",
-                parse_mode='Markdown'
-            )
-            print(f"📨 Напоминание о геолокации отправлено пользователю {user['user_id']}")
-        except:
-            pass
-
+# ========== ЗАПУСК ==========
 def main():
     init_db()
     
@@ -342,22 +328,25 @@ def main():
     
     # Хендлеры
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.LOCATION, handle_location))
     app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data))
     
     # Периодические задачи
     job_queue = app.job_queue
     if job_queue:
-        # Проверка истекших напоминаний каждый час
+        # Проверка потери геолокации КАЖДУЮ МИНУТУ
+        job_queue.run_repeating(check_location_loss, interval=60, first=30)
+        
+        # Проверка истекших напоминаний (раз в час)
         job_queue.run_repeating(check_expired_reminders, interval=3600, first=10)
-        # Напоминание о геолокации раз в день в 12:00
-        job_queue.run_daily(notify_location_denied, time=datetime.time(12, 0, 0))
-        print("⏰ Job queue настроен")
+        
+        print("⏰ Планировщик задач запущен")
+        print("📍 Проверка геолокации: каждые 60 секунд")
     
     print("🚀 Бот запущен!")
-    print("⏰ Проверка геолокации активна")
-    print("📅 Истекшие напоминания будут удаляться автоматически")
+    print("📡 Режим: 24/7 отслеживание геолокации")
+    print("⏱️ Потеря гео → уведомление через 70 секунд")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
-
