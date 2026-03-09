@@ -8,7 +8,7 @@
     <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Яндекс Карты API (только для показа карты и поиска) -->
+    <!-- Яндекс Карты API -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey=84e764a6-fd03-4740-beb1-328a4072c4ca&lang=ru_RU" type="text/javascript"></script>
     
     <style>
@@ -20,15 +20,15 @@
         }
         
         body {
-            background: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
+            background: #ffffff;
+            color: #000000;
             min-height: 100vh;
         }
         
         /* Табы */
         .tabs {
             display: flex;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            background: #f0f0f0;
             padding: 10px;
             gap: 10px;
             position: sticky;
@@ -42,19 +42,18 @@
             border: none;
             border-radius: 10px;
             background: transparent;
-            color: var(--tg-theme-text-color, #000);
+            color: #000000;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
         }
         
         .tab.active {
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: var(--tg-theme-button-text-color, #fff);
+            background: #40a7e3;
+            color: white;
         }
         
-        /* Контент табов */
+        /* Контент */
         .content {
             display: none;
             padding: 16px;
@@ -70,10 +69,10 @@
             height: 350px;
             border-radius: 16px;
             margin: 16px 0;
-            border: 2px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border: 2px solid #e0e0e0;
         }
         
-        /* Поля ввода */
+        /* ПОИСК - ЦВЕТНОЙ И ЗАМЕТНЫЙ */
         .search-container {
             position: relative;
             margin-bottom: 16px;
@@ -82,24 +81,24 @@
         .search-input {
             width: 100%;
             padding: 16px;
-            border: 2px solid var(--tg-theme-button-color, #40a7e3);
+            border: 2px solid #40a7e3;
             border-radius: 16px;
             font-size: 16px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000);
+            background: #f5f5f5;
+            color: #000000;
             outline: none;
-            transition: 0.2s;
         }
         
         .search-input:focus {
             border-color: #2ecc71;
+            background: #ffffff;
         }
         
         .search-input::placeholder {
-            color: var(--tg-theme-hint-color, #999);
-            opacity: 0.8;
+            color: #666666;
         }
         
+        /* ПОДСКАЗКИ */
         .suggestions {
             position: absolute;
             top: 100%;
@@ -107,63 +106,51 @@
             right: 0;
             max-height: 250px;
             overflow-y: auto;
-            background: var(--tg-theme-bg-color, #fff);
-            border: 2px solid var(--tg-theme-button-color, #40a7e3);
+            background: white;
+            border: 2px solid #40a7e3;
             border-radius: 16px;
             margin-top: 4px;
             display: none;
             z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
         .suggestion-item {
             padding: 14px 16px;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #ddd);
+            border-bottom: 1px solid #e0e0e0;
             cursor: pointer;
-            font-size: 15px;
-            transition: 0.2s;
+            color: #000000;
+            background: white;
         }
         
-        .suggestion-item:last-child {
-            border-bottom: none;
+        .suggestion-item:hover {
+            background: #f0f0f0;
         }
         
-        .suggestion-item:hover,
-        .suggestion-item:active {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-        }
-        
-        /* Карточки мест */
-        .places-list {
-            margin: 16px 0;
-        }
-        
+        /* Карточки */
         .place-card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 20px;
-            padding: 18px;
+            background: #f5f5f5;
+            border-radius: 16px;
+            padding: 16px;
             margin-bottom: 12px;
             cursor: pointer;
-            transition: 0.2s;
-            border: 2px solid transparent;
+            border: 1px solid #e0e0e0;
         }
         
         .place-card:active {
-            transform: scale(0.98);
-            border-color: var(--tg-theme-button-color, #40a7e3);
+            background: #e8e8e8;
         }
         
         .place-name {
             font-weight: 700;
             font-size: 18px;
-            margin-bottom: 6px;
-            color: var(--tg-theme-text-color, #000);
+            margin-bottom: 4px;
+            color: #000000;
         }
         
         .place-address {
             font-size: 14px;
-            color: var(--tg-theme-hint-color, #666);
-            line-height: 1.4;
+            color: #666666;
         }
         
         /* Кнопки */
@@ -176,16 +163,11 @@
             font-weight: 600;
             cursor: pointer;
             margin: 8px 0;
-            transition: 0.2s;
-        }
-        
-        .btn:active {
-            transform: scale(0.98);
         }
         
         .btn-primary {
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: var(--tg-theme-button-text-color, #fff);
+            background: #40a7e3;
+            color: white;
         }
         
         .btn-success {
@@ -204,26 +186,23 @@
         }
         
         .btn-secondary {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000);
-            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            background: #e0e0e0;
+            color: #000000;
         }
         
-        /* Меню действий */
+        /* Меню */
         .action-menu {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--tg-theme-bg-color, #fff);
+            background: white;
             padding: 24px;
-            border-radius: 30px 30px 0 0;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
             transform: translateY(100%);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s;
             z-index: 1000;
-            max-height: 85vh;
-            overflow-y: auto;
         }
         
         .action-menu.show {
@@ -231,138 +210,88 @@
         }
         
         .action-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 6px;
-            padding-right: 30px;
+            color: #000000;
         }
         
         .action-address {
-            font-size: 15px;
-            color: var(--tg-theme-hint-color, #666);
-            margin-bottom: 24px;
+            color: #666666;
+            margin: 8px 0 20px;
             padding-bottom: 16px;
-            border-bottom: 2px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-bottom: 1px solid #e0e0e0;
         }
         
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 18px;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--tg-theme-text-color, #000);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .close-btn:active {
-            background: var(--tg-theme-hint-color, #ccc);
-        }
-        
-        /* Селекты и слайдеры */
+        /* Селекты и ползунки - ТЕПЕРЬ ВИДНЫ */
         .select-field {
             width: 100%;
-            padding: 16px;
-            border: 2px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 16px;
+            padding: 14px;
+            border: 2px solid #40a7e3;
+            border-radius: 12px;
             font-size: 16px;
             margin: 8px 0;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000);
-            outline: none;
-        }
-        
-        .select-field:focus {
-            border-color: var(--tg-theme-button-color, #40a7e3);
+            background: white;
+            color: #000000;
         }
         
         .radius-control {
             margin: 16px 0;
+            padding: 16px;
+            background: #f5f5f5;
+            border-radius: 12px;
         }
         
         .radius-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 15px;
+            margin-bottom: 10px;
+            color: #000000;
+            font-weight: 500;
         }
         
         .radius-slider {
             width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            outline: none;
+            height: 8px;
+            background: #40a7e3;
+            border-radius: 4px;
             -webkit-appearance: none;
         }
         
         .radius-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
+            background: #2ecc71;
             border-radius: 50%;
-            background: var(--tg-theme-button-color, #40a7e3);
             cursor: pointer;
             border: 2px solid white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
         
-        /* Информация о выбранном месте */
+        /* Выбранное место */
         .selected-info {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 20px;
+            background: #f5f5f5;
+            border-radius: 16px;
             padding: 20px;
             margin: 16px 0;
         }
         
         .selected-address {
-            font-size: 15px;
-            margin-bottom: 16px;
+            background: white;
             padding: 12px;
-            background: var(--tg-theme-bg-color, #fff);
             border-radius: 12px;
-            word-break: break-word;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666666;
+            margin-bottom: 4px;
         }
         
         .hidden {
             display: none !important;
-        }
-        
-        /* Текст-подсказка */
-        .hint-text {
-            text-align: center;
-            color: var(--tg-theme-hint-color, #999);
-            padding: 40px 20px;
-            font-size: 16px;
-        }
-        
-        /* Разделитель */
-        .divider {
-            height: 1px;
-            background: var(--tg-theme-hint-color, #ccc);
-            margin: 24px 0;
-            opacity: 0.3;
-        }
-        
-        /* Метка */
-        .label {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: var(--tg-theme-hint-color, #666);
         }
     </style>
 </head>
@@ -370,32 +299,32 @@
     <!-- Табы -->
     <div class="tabs">
         <button class="tab active" onclick="switchTab('map')">🗺️ Карта</button>
-        <button class="tab" onclick="switchTab('places')">⭐ Избранное</button>
+        <button class="tab" onclick="switchTab('places')">⭐ Избранные места</button>
         <button class="tab" onclick="switchTab('reminders')">🔔 Напоминания</button>
     </div>
     
     <!-- Вкладка КАРТА -->
     <div id="tab-map" class="content active">
-        <!-- ПОИСК (наверху, цветной) -->
+        <!-- ПОИСК - НАВЕРХУ, ЦВЕТНОЙ -->
         <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Введите адрес вашего места..." autocomplete="off" oninput="searchAddress(this.value)">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Введите адрес..." oninput="searchAddress(this.value)">
             <div class="suggestions" id="suggestions"></div>
         </div>
         
         <!-- Карта -->
         <div id="map"></div>
         
-        <!-- Информация о выбранном месте (появляется после выбора) -->
+        <!-- Форма для выбранного места -->
         <div id="selectedPlaceInfo" class="selected-info hidden">
             <div class="label">📍 Выбранное место:</div>
             <div class="selected-address" id="selectedAddress"></div>
             
-            <div class="label">📝 Название места</div>
-            <input type="text" class="search-input" id="placeName" placeholder="Например: Дом, Работа, Wildberries">
+            <div class="label">📝 Название</div>
+            <input type="text" class="search-input" id="placeName" placeholder="Например: Дом, Работа">
             
             <div class="radius-control">
                 <div class="radius-label">
-                    <span>📏 Радиус срабатывания:</span>
+                    <span>📏 Радиус:</span>
                     <span id="radiusValue">200</span> м
                 </div>
                 <input type="range" class="radius-slider" min="50" max="1000" value="200" step="50" oninput="updateRadius(this.value)">
@@ -410,68 +339,53 @@
                 <option value="forever">Постоянно</option>
             </select>
             
-            <div class="label">📝 Текст напоминания</div>
-            <input type="text" class="search-input" id="reminderText" placeholder="Например: Купить молоко">
+            <div class="label">📝 Текст</div>
+            <input type="text" class="search-input" id="reminderText" placeholder="Текст напоминания">
             
             <div style="display: flex; gap: 10px; margin-top: 16px;">
-                <button class="btn btn-primary" style="flex: 1;" onclick="saveToFavorites()">⭐ В избранное</button>
-                <button class="btn btn-success" style="flex: 1;" onclick="createReminder()">🔔 Создать</button>
+                <button class="btn btn-primary" style="flex:1" onclick="saveToFavorites()">⭐ В избранные места</button>
+                <button class="btn btn-success" style="flex:1" onclick="createReminder()">🔔 Создать</button>
             </div>
         </div>
     </div>
     
-    <!-- Вкладка ИЗБРАННОЕ -->
+    <!-- Вкладка ИЗБРАННЫЕ МЕСТА -->
     <div id="tab-places" class="content">
-        <button class="btn btn-primary" onclick="switchTab('map')">➕ Добавить новое место</button>
-        
-        <div class="divider"></div>
-        
+        <button class="btn btn-primary" onclick="switchTab('map')">➕ Добавить место</button>
         <div id="favoritesList" class="places-list"></div>
     </div>
     
     <!-- Вкладка НАПОМИНАНИЯ -->
     <div id="tab-reminders" class="content">
-        <button class="btn btn-success" onclick="switchTab('map')">🔔 Создать напоминание</button>
-        
-        <div class="divider"></div>
-        
+        <button class="btn btn-success" onclick="switchTab('map')">🔔 Создать</button>
         <div id="remindersList" class="places-list"></div>
     </div>
     
-    <!-- Меню действий для избранного места -->
+    <!-- Меню для избранного места -->
     <div class="action-menu" id="placeActionMenu">
-        <button class="close-btn" onclick="hidePlaceMenu()">✕</button>
-        
         <div class="action-title" id="menuPlaceName"></div>
         <div class="action-address" id="menuPlaceAddress"></div>
         
-        <div class="action-buttons">
-            <button class="btn btn-success" onclick="showAddReminderFromPlace()">🔔 Добавить напоминание</button>
-            
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-warning" style="flex: 1;" onclick="editPlace()">✏️ Редактировать</button>
-                <button class="btn btn-danger" style="flex: 1;" onclick="deletePlace()">🗑️ Удалить</button>
-            </div>
-            
-            <button class="btn btn-secondary" onclick="hidePlaceMenu()">Отмена</button>
+        <button class="btn btn-success" onclick="showAddReminderFromPlace()">🔔 Добавить напоминание</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-warning" style="flex:1" onclick="editPlace()">✏️ Редактировать</button>
+            <button class="btn btn-danger" style="flex:1" onclick="deletePlace()">🗑️ Удалить</button>
         </div>
+        <button class="btn btn-secondary" onclick="hidePlaceMenu()">Отмена</button>
     </div>
     
-    <!-- Меню добавления напоминания из места -->
+    <!-- Меню добавления напоминания -->
     <div class="action-menu" id="reminderFromPlaceMenu">
-        <button class="close-btn" onclick="hideReminderMenu()">✕</button>
-        
         <div class="action-title" id="reminderPlaceName"></div>
         
         <div class="radius-control">
             <div class="radius-label">
-                <span>📏 Радиус срабатывания:</span>
+                <span>📏 Радиус:</span>
                 <span id="reminderRadiusValue">200</span> м
             </div>
             <input type="range" class="radius-slider" min="50" max="1000" value="200" step="50" oninput="updateReminderRadius(this.value)">
         </div>
         
-        <div class="label">🔄 Повтор</div>
         <select class="select-field" id="reminderRepeatSelect">
             <option value="once">Один раз</option>
             <option value="daily">Каждый день</option>
@@ -480,10 +394,9 @@
             <option value="forever">Постоянно</option>
         </select>
         
-        <div class="label">📝 Текст напоминания</div>
-        <input type="text" class="search-input" id="reminderFromPlaceText" placeholder="Введите текст...">
+        <input type="text" class="search-input" id="reminderFromPlaceText" placeholder="Текст напоминания">
         
-        <button class="btn btn-success" style="margin-top: 16px;" onclick="createReminderFromPlace()">🔔 Создать</button>
+        <button class="btn btn-success" onclick="createReminderFromPlace()">🔔 Создать</button>
         <button class="btn btn-secondary" onclick="hideReminderMenu()">Отмена</button>
     </div>
     
@@ -499,92 +412,71 @@
         let reminderRadius = 200;
         let reminderFromPlaceRadius = 200;
         
-        // Инициализация Telegram
         function initTelegram() {
             if (window.Telegram && window.Telegram.WebApp) {
                 tg = window.Telegram.WebApp;
                 tg.expand();
                 tg.ready();
-                console.log('✅ Telegram WebApp готов');
+                console.log('Telegram WebApp готов');
                 
-                // Загружаем данные
                 loadFavorites();
                 loadReminders();
-                
-                // Инициализируем карту
                 ymaps.ready(initMap);
             } else {
-                console.log('⏳ Ожидание Telegram...');
                 setTimeout(initTelegram, 100);
             }
         }
-        
         initTelegram();
         
         // Инициализация карты
         function initMap() {
-            console.log('🗺️ Загрузка карты...');
             map = new ymaps.Map('map', {
-                center: [53.9, 27.5667], // Минск
+                center: [53.9, 27.5667],
                 zoom: 10
             });
             
-            // Пытаемся получить текущую геолокацию
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     position => {
                         const { latitude, longitude } = position.coords;
                         map.setCenter([latitude, longitude], 14);
-                        console.log('📍 Текущая позиция:', latitude, longitude);
-                        
-                        // Проверяем напоминания
                         if (tg) checkReminders(latitude, longitude);
                     },
-                    error => console.log('⚠️ Геолокация:', error.message)
+                    error => console.log('Геолокация:', error.message)
                 );
             }
             
-            // Клик по карте
             map.events.add('click', e => {
                 const coords = e.get('coords');
                 selectedCoords = coords;
                 
-                // Убираем старую метку
-                if (placemark) {
-                    map.geoObjects.remove(placemark);
-                }
+                if (placemark) map.geoObjects.remove(placemark);
                 
-                // Ставим новую метку
-                placemark = new ymaps.Placemark(coords, {}, {
-                    preset: 'islands#redDotIcon'
-                });
+                placemark = new ymaps.Placemark(coords);
                 map.geoObjects.add(placemark);
                 
-                // Получаем адрес
                 ymaps.geocode(coords).then(res => {
-                    const firstGeoObject = res.geoObjects.get(0);
-                    selectedAddress = firstGeoObject.getAddressLine();
-                    
-                    // Показываем форму
+                    selectedAddress = res.geoObjects.get(0).getAddressLine();
                     document.getElementById('selectedAddress').textContent = selectedAddress;
                     document.getElementById('selectedPlaceInfo').classList.remove('hidden');
                     document.getElementById('searchInput').value = selectedAddress;
-                    
-                    // Очищаем поля
-                    document.getElementById('placeName').value = '';
-                    document.getElementById('reminderText').value = '';
                 });
             });
         }
         
-        // Поиск адреса (Яндекс) - рабочий поиск
+        // ПОИСК - ИСПРАВЛЕННЫЙ
         function searchAddress(query) {
             if (!query) {
                 document.getElementById('suggestions').style.display = 'none';
                 return;
             }
             
-            ymaps.suggest(query).then(suggestions => {
+            console.log('Поиск:', query);
+            
+            ymaps.suggest(query, {
+                results: 10,
+                boundedBy: [[50, 20], [70, 60]]
+            }).then(suggestions => {
                 const div = document.getElementById('suggestions');
                 div.innerHTML = '';
                 
@@ -607,7 +499,6 @@
             });
         }
         
-        // Выбор подсказки
         function selectSuggestion(suggestion) {
             document.getElementById('searchInput').value = suggestion.displayName;
             document.getElementById('suggestions').style.display = 'none';
@@ -619,13 +510,9 @@
                 
                 map.setCenter(coords, 16);
                 
-                if (placemark) {
-                    map.geoObjects.remove(placemark);
-                }
+                if (placemark) map.geoObjects.remove(placemark);
                 
-                placemark = new ymaps.Placemark(coords, {}, {
-                    preset: 'islands#redDotIcon'
-                });
+                placemark = new ymaps.Placemark(coords);
                 map.geoObjects.add(placemark);
                 
                 document.getElementById('selectedAddress').textContent = selectedAddress;
@@ -638,12 +525,12 @@
         function saveToFavorites() {
             const name = document.getElementById('placeName').value.trim();
             if (!name) {
-                if (tg) tg.showAlert('Введите название места');
+                if (tg) tg.showAlert('Введите название');
                 return;
             }
             
             if (!selectedCoords) {
-                if (tg) tg.showAlert('Выберите место на карте');
+                if (tg) tg.showAlert('Выберите место');
                 return;
             }
             
@@ -654,27 +541,11 @@
                 lng: selectedCoords[1]
             };
             
-            console.log('📦 Сохранение места:', place);
-            
             if (tg) {
                 tg.sendData(JSON.stringify({
                     action: 'add_place',
                     place: place
                 }));
-                
-                tg.showAlert('✅ Место сохранено');
-                
-                // Очищаем
-                document.getElementById('placeName').value = '';
-                document.getElementById('selectedPlaceInfo').classList.add('hidden');
-                document.getElementById('searchInput').value = '';
-                
-                if (placemark) {
-                    map.geoObjects.remove(placemark);
-                    placemark = null;
-                }
-                
-                setTimeout(() => loadFavorites(), 1000);
             }
         }
         
@@ -682,158 +553,111 @@
         function createReminder() {
             const text = document.getElementById('reminderText').value.trim();
             if (!text) {
-                if (tg) tg.showAlert('Введите текст напоминания');
+                if (tg) tg.showAlert('Введите текст');
                 return;
             }
             
             if (!selectedCoords) {
-                if (tg) tg.showAlert('Выберите место на карте');
+                if (tg) tg.showAlert('Выберите место');
                 return;
             }
-            
-            const repeat = document.getElementById('repeatSelect').value;
             
             const reminder = {
                 text: text,
                 lat: selectedCoords[0],
                 lng: selectedCoords[1],
                 radius: reminderRadius,
-                repeat: repeat,
+                repeat: document.getElementById('repeatSelect').value,
                 place_id: null
             };
-            
-            console.log('📦 Создание напоминания:', reminder);
             
             if (tg) {
                 tg.sendData(JSON.stringify({
                     action: 'add_reminder',
                     reminder: reminder
                 }));
-                
-                tg.showAlert('✅ Напоминание создано');
-                
-                // Очищаем
-                document.getElementById('reminderText').value = '';
-                document.getElementById('selectedPlaceInfo').classList.add('hidden');
-                document.getElementById('searchInput').value = '';
-                
-                if (placemark) {
-                    map.geoObjects.remove(placemark);
-                    placemark = null;
-                }
-                
-                setTimeout(() => loadReminders(), 1000);
             }
         }
         
-        // Создать напоминание из места
         function createReminderFromPlace() {
             const text = document.getElementById('reminderFromPlaceText').value.trim();
             if (!text) {
-                if (tg) tg.showAlert('Введите текст напоминания');
+                if (tg) tg.showAlert('Введите текст');
                 return;
             }
             
             const place = favoritePlaces.find(p => p.id == currentPlaceId);
             if (!place) return;
             
-            const repeat = document.getElementById('reminderRepeatSelect').value;
-            
             const reminder = {
                 text: text,
                 lat: place.lat,
                 lng: place.lng,
                 radius: reminderFromPlaceRadius,
-                repeat: repeat,
+                repeat: document.getElementById('reminderRepeatSelect').value,
                 place_id: currentPlaceId
             };
-            
-            console.log('📦 Создание напоминания из места:', reminder);
             
             if (tg) {
                 tg.sendData(JSON.stringify({
                     action: 'add_reminder',
                     reminder: reminder
                 }));
-                
-                tg.showAlert('✅ Напоминание создано');
                 hideReminderMenu();
-                setTimeout(() => loadReminders(), 1000);
             }
         }
         
-        // Загрузить избранное
         function loadFavorites() {
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'get_places'
-                }));
-            }
+            if (tg) tg.sendData(JSON.stringify({action: 'get_places'}));
         }
         
-        // Показать избранное
+        function loadReminders() {
+            if (tg) tg.sendData(JSON.stringify({action: 'get_reminders'}));
+        }
+        
         function showFavorites(places) {
-            console.log('📦 Места:', places);
             favoritePlaces = places || [];
             const list = document.getElementById('favoritesList');
             
-            if (!favoritePlaces || favoritePlaces.length === 0) {
-                list.innerHTML = '<div class="hint-text">⭐ У вас пока нет избранных мест</div>';
+            if (!favoritePlaces.length) {
+                list.innerHTML = '<div style="text-align:center;padding:40px">⭐ Нет избранных мест</div>';
                 return;
             }
             
-            list.innerHTML = favoritePlaces.map(place => `
-                <div class="place-card" onclick="openPlaceMenu('${place.id}')">
-                    <div class="place-name">${escapeHtml(place.name)}</div>
-                    <div class="place-address">${escapeHtml(place.address)}</div>
+            list.innerHTML = favoritePlaces.map(p => `
+                <div class="place-card" onclick="openPlaceMenu('${p.id}')">
+                    <div class="place-name">${p.name}</div>
+                    <div class="place-address">${p.address}</div>
                 </div>
             `).join('');
         }
         
-        // Загрузить напоминания
-        function loadReminders() {
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'get_reminders'
-                }));
-            }
-        }
-        
-        // Показать напоминания
         function showReminders(remindersList) {
-            console.log('📦 Напоминания:', remindersList);
             reminders = remindersList || [];
             const list = document.getElementById('remindersList');
             
-            if (!reminders || reminders.length === 0) {
-                list.innerHTML = '<div class="hint-text">🔔 Нет активных напоминаний</div>';
+            if (!reminders.length) {
+                list.innerHTML = '<div style="text-align:center;padding:40px">🔔 Нет напоминаний</div>';
                 return;
             }
             
             list.innerHTML = reminders.map(r => {
                 const place = favoritePlaces.find(p => p.id == r.place_id);
-                const placeName = place ? place.name : '📍 Временная точка';
                 const repeatText = {
-                    'once': 'Один раз',
-                    'daily': 'Каждый день',
-                    'weekly': 'Каждую неделю',
-                    'monthly': 'Каждый месяц',
-                    'forever': 'Постоянно'
+                    'once':'Один раз','daily':'Каждый день','weekly':'Каждую неделю',
+                    'monthly':'Каждый месяц','forever':'Постоянно'
                 }[r.repeat_type] || 'Один раз';
                 
                 return `
                     <div class="place-card">
-                        <div class="place-name">🔔 ${escapeHtml(r.text)}</div>
-                        <div class="place-address">${escapeHtml(placeName)}</div>
-                        <div style="font-size: 13px; color: var(--tg-theme-hint-color); margin-top: 8px;">
-                            📏 ${r.radius || 200}м • ${repeatText}
-                        </div>
+                        <div class="place-name">🔔 ${r.text}</div>
+                        <div class="place-address">${place ? place.name : '📍 Временная'}</div>
+                        <div style="color:#666;margin-top:8px">📏 ${r.radius}м • ${repeatText}</div>
                     </div>
                 `;
             }).join('');
         }
         
-        // Открыть меню места
         function openPlaceMenu(placeId) {
             const place = favoritePlaces.find(p => p.id == placeId);
             if (!place) return;
@@ -844,37 +668,28 @@
             document.getElementById('placeActionMenu').classList.add('show');
         }
         
-        // Показать меню добавления напоминания из места
         function showAddReminderFromPlace() {
             const place = favoritePlaces.find(p => p.id == currentPlaceId);
             if (!place) return;
             
             document.getElementById('reminderPlaceName').textContent = place.name;
             document.getElementById('reminderFromPlaceText').value = '';
-            document.getElementById('reminderRadiusValue').textContent = '200';
             document.getElementById('reminderFromPlaceMenu').classList.add('show');
             hidePlaceMenu();
         }
         
-        // Редактировать место
         function editPlace() {
             const place = favoritePlaces.find(p => p.id == currentPlaceId);
             if (!place) return;
             
             switchTab('map');
-            
             selectedCoords = [place.lat, place.lng];
             selectedAddress = place.address;
             
             map.setCenter([place.lat, place.lng], 16);
             
-            if (placemark) {
-                map.geoObjects.remove(placemark);
-            }
-            
-            placemark = new ymaps.Placemark([place.lat, place.lng], {}, {
-                preset: 'islands#redDotIcon'
-            });
+            if (placemark) map.geoObjects.remove(placemark);
+            placemark = new ymaps.Placemark([place.lat, place.lng]);
             map.geoObjects.add(placemark);
             
             document.getElementById('selectedAddress').textContent = place.address;
@@ -885,23 +700,17 @@
             hidePlaceMenu();
         }
         
-        // Удалить место
         function deletePlace() {
-            if (!confirm('Удалить это место из избранного?')) return;
-            
+            if (!confirm('Удалить место?')) return;
             if (tg) {
                 tg.sendData(JSON.stringify({
                     action: 'delete_place',
                     place_id: currentPlaceId
                 }));
-                
-                tg.showAlert('✅ Место удалено');
                 hidePlaceMenu();
-                setTimeout(() => loadFavorites(), 1000);
             }
         }
         
-        // Обновить радиус
         function updateRadius(value) {
             reminderRadius = value;
             document.getElementById('radiusValue').textContent = value;
@@ -912,7 +721,6 @@
             document.getElementById('reminderRadiusValue').textContent = value;
         }
         
-        // Проверить напоминания
         function checkReminders(lat, lng) {
             if (tg) {
                 tg.sendData(JSON.stringify({
@@ -923,7 +731,6 @@
             }
         }
         
-        // Переключение табов
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -943,7 +750,6 @@
             }
         }
         
-        // Скрыть меню
         function hidePlaceMenu() {
             document.getElementById('placeActionMenu').classList.remove('show');
         }
@@ -952,32 +758,15 @@
             document.getElementById('reminderFromPlaceMenu').classList.remove('show');
         }
         
-        // Экранирование HTML
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-        
-        // Получение сообщений от бота
+        // Слушаем ответы от бота
         window.addEventListener('message', event => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'places') {
-                    showFavorites(data.places);
-                } else if (data.type === 'reminders') {
-                    showReminders(data.reminders);
-                } else if (data.type === 'success') {
-                    if (tg) tg.showAlert(data.message);
-                } else if (data.type === 'error') {
-                    if (tg) tg.showAlert('❌ ' + data.message);
-                }
-            } catch (e) {
-                console.error('❌ Ошибка:', e);
-            }
+                if (data.type === 'places') showFavorites(data.places);
+                if (data.type === 'reminders') showReminders(data.reminders);
+                if (data.type === 'success' && tg) tg.showAlert(data.message);
+                if (data.type === 'error' && tg) tg.showAlert('❌ ' + data.message);
+            } catch (e) {}
         });
     </script>
 </body>
